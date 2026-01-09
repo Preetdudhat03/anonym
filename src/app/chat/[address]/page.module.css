@@ -2,8 +2,13 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    /* Fallback */
+    height: 100dvh;
+    /* Mobile browser friendly */
     background: #050505;
     color: white;
+    overflow: hidden;
+    /* Prevent body scroll */
 }
 
 .header {
@@ -157,7 +162,13 @@
 
     .inputArea {
         padding: 0.8rem;
+        padding-bottom: max(0.8rem, env(safe-area-inset-bottom));
         gap: 0.5rem;
+        position: sticky;
+        bottom: 0;
+        background: black;
+        /* Ensure opaque background */
+        z-index: 10;
     }
 
     .input {

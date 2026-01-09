@@ -43,26 +43,8 @@ export default function ChatPage({ params }) {
         }
     };
 
-    // Mobile Keyboard Handling
-    const [viewportHeight, setViewportHeight] = useState('100dvh');
-
-    useEffect(() => {
-        // VisualViewport API is supported in modern browsers (Chrome, Safari, Firefox)
-        if (!window.visualViewport) return;
-
-        const handleResize = () => {
-            // Updating the height forces the layout to shrink to fit the visible area above keyboard
-            setViewportHeight(`${window.visualViewport.height}px`);
-        };
-
-        window.visualViewport.addEventListener('resize', handleResize);
-        handleResize(); // Init
-
-        return () => window.visualViewport.removeEventListener('resize', handleResize);
-    }, []);
-
     return (
-        <div className={styles.container} style={{ height: viewportHeight }}>
+        <div className={styles.container}>
             <header className={styles.header}>
                 <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.9rem' }}>
                     ← Dashboard
