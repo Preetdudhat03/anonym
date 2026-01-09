@@ -131,3 +131,41 @@
         transform: translateY(0);
     }
 }
+
+@media (max-width: 768px) {
+    .header {
+        padding: 0.8rem;
+    }
+
+    .peerAddress {
+        font-size: 0.75rem;
+        /* Truncate if too long on very small screens */
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .message {
+        max-width: 85%;
+        /* Use more width on mobile */
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .inputArea {
+        padding: 0.8rem;
+        gap: 0.5rem;
+    }
+
+    .input {
+        padding: 0.8rem;
+    }
+
+    .sendButton {
+        width: 45px;
+        height: 45px;
+    }
+}

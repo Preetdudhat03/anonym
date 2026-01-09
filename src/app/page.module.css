@@ -118,3 +118,31 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    justify-content: flex-start;
+    /* Move card up on mobile */
+    padding-top: 2rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .button {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .addressBox {
+    font-size: 0.75rem;
+    padding: 0.8rem;
+  }
+}
