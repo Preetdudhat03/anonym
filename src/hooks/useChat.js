@@ -47,7 +47,7 @@ export function useChat(identity, peerAddress) {
                     if (peerAddress) fetchPeerKey();
 
                     // Request History Sync - DISABLED for Ephemeral Mode
-                    // ws.send(JSON.stringify({ type: 'request_history' }));
+                    ws.send(JSON.stringify({ type: 'request_history' }));
                 }
 
                 // 3. Handle Incoming Message
