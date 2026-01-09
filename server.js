@@ -222,9 +222,10 @@ app.prepare().then(() => {
         });
     });
 
-    server.listen(3002, (err) => {
+    const PORT = process.env.PORT || 3000;
+    server.listen(PORT, (err) => {
         if (err) throw err;
-        console.log('> Server Ready on http://localhost:3002 (Ed25519 Mode)');
+        console.log(`> Server Ready on http://localhost:${PORT} (Ed25519 Mode)`);
 
         // TTL Cleaner (Every 60s)
         setInterval(async () => {
