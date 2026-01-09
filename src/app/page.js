@@ -1,66 +1,91 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+import { useIdentity } from '@/hooks/useIdentity';
+import { useChat } from '@/hooks/useChat';
+import styles from './page.module.css';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+  const { identity, loading, createIdentity, resetIdentity } = useIdentity();
+  // Auto-connect to register presence/keys
+  const { status } = useChat(identity, null);
+
+  const [targetAddress, setTargetAddress] = useState('');
+  const router = useRouter();
+
+  if (loading) {
+    return <div className={styles.container} style={{ color: '#666' }}>Loading security context...</div>;
+  }
+
+  const handleStartChat = (e) => {
+    e.preventDefault();
+    if (targetAddress.trim()) {
+      router.push(`/chat/${targetAddress.trim()}`);
+    }
+  };
+
+  if (!identity) {
+    return (
+      <main className={styles.container}>
+        <div className={styles.card}>
+          <h1 className={styles.title}>Anonym</h1>
+          <p className={styles.subtitle}>End-to-End Encrypted 1-to-1 Chat</p>
+
+          <div style={{ textAlign: 'left', marginBottom: '2rem', fontSize: '0.9rem', color: '#aaa', lineHeight: '1.6' }}>
+            <p>🔒 <strong>Zero Knowledge:</strong> Server cannot read messages.</p>
+            <p>🔑 <strong>Client Keys:</strong> Identity lives in your browser.</p>
+            <p>⏳ <strong>Auto-Expiry:</strong> History vanishes automatically.</p>
+          </div>
+
+          <button onClick={createIdentity} className={styles.button}>
+            Generate Key Identity
+          </button>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Dashboard</h1>
+
+        <div style={{ marginBottom: '2rem' }}>
+          <label className={styles.label}>Your Unique Address</label>
+          <div className={styles.addressBox} onClick={() => navigator.clipboard.writeText(identity.address)} style={{ cursor: 'pointer' }} title="Click to copy">
+            {identity.address}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#666' }}>Share this address to receive messages.</p>
+          <div style={{ marginTop: 5, fontSize: '0.7rem', color: status === 'connected' ? '#00ff9d' : '#ff4444' }}>
+            Status: {status === 'connected' ? 'ONLINE (Keys Registered)' : 'OFFLINE'}
+          </div>
+        </div>
+
+        <form onSubmit={handleStartChat} style={{ marginBottom: '2rem' }}>
+            <label className={styles.label}>Connect to Peer</label>
+            <input
+            className={styles.input}
+            placeholder="Paste Recipient Address Hash"
+            value={targetAddress}
+            onChange={(e) => setTargetAddress(e.target.value)}
+            required
+            />
+            <button type="submit" className={styles.button} disabled={!targetAddress}>
+            Start Encrypted Session
+            </button>
+        </form>
+
+        <button
+            onClick={() => {
+            if (window.confirm('WARNING: Deleting your identity is permanent. You will lose access to all chats and messages forever. Continue?')) {
+                resetIdentity();
+            }
+            }}
+            className={`${styles.button} ${styles.buttonSecondary}`}
+        >
+            Destroy Identity & Wipe Data
+        </button>
+      </div>
+    </main>
   );
 }

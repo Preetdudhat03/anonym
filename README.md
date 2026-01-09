@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Anonymous End-to-End Encrypted Chat System (Redesigned)
 
-## Getting Started
+## Security Architecture (Ed25519 + X25519 + AES-GCM)
 
-First, run the development server:
+This project has been redesigned to use strictly audited cryptographic primitives and minimized metadata leakage.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚨 Security Disclaimers
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. No Forward Secrecy for Transcripts
+We use **Ephemeral Keys per Message**, which provides Forward Secrecy for individual messages if the ephemeral keys are deleted. However, we do **NOT** implement the Double Ratchet Algorithm. A compromise of your device (and thus your identity/encryption private keys) allows an attacker to impersonate you in future messages, though they cannot retroactively decrypt old messages unless they also logged the ephemeral keys (which we destroy).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 2. Metadata Leakage
+While we pad messages to fixed 512-byte buckets and add randomized delays, a powerful network adversary (ISP/NSA) can likely infer:
+- Who is talking to whom (by correlating packet timings).
+- Approximate volume of communication.
+- That you are using this specific chat protocol.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Identity Permanence
+**If you lose your browser data (IndexedDB), your identity is lost forever.**
+There is no password reset. There is no backup. This is a design feature, not a bug.
 
-## Learn More
+### 4. Server Trust
+The server is **Blind** to content but **Trusted** for routing.
+- **Can Server Read Messages?** NO.
+- **Can Server Block Messages?** YES.
+- **Can Server Metadata-Log?** YES.
 
-To learn more about Next.js, take a look at the following resources:
+## Technology Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Identity**: Ed25519 (via `tweetnacl`)
+- **Key Agreement**: X25519 (via `tweetnacl`)
+- **Encryption**: AES-GCM-256 (via Web Crypto API)
+- **Key Derivation**: HKDF-SHA-256
+- **Transport**: WebSocket (Secure Context Required)
+- **Database**: PostgreSQL (Supabase) - Stores blobs only.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Setup
 
-## Deploy on Vercel
+1. `npm install`
+2. `npm run dev` (Runs custom server on port 3000)
+3. Ensure Supabase env vars are set in `.env.local`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Note**: This application MUST be run in a Secure Context (HTTPS or localhost) for Web Crypto API to function.

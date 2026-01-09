@@ -1,35 +1,33 @@
--- Anonym Chat System Schema
+-- Anonym Chat System Schema (v2 - Final)
+-- RUN THIS IN SUPABASE SQL EDITOR TO FIX "PEER NOT REGISTERED" ERRORS
 
--- Users table: Stores anonymous identities (hashed public keys)
-create table if not exists users (
-  id uuid default gen_random_uuid() primary key,
-  public_key_hash text not null unique,
-  created_at timestamptz default now(),
-  last_seen timestamptz default now(),
-  status text default 'active'
-);
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS chats; -- Deprecated
 
--- Chats table: Stores active chat sessions between two users
-create table if not exists chats (
+-- Users table: Stores anonymous identities
+-- We use TEXT for keys because we store Base64 strings now, not JSON.
+create table users (
   id uuid default gen_random_uuid() primary key,
-  user_a text not null, -- Public Key Hash of User A
-  user_b text not null, -- Public Key Hash of User B
+  public_key_hash text not null unique, -- The Address (SHA-256 Hex)
+  public_key text not null,             -- Identity Public Key (Ed25519 Base64)
+  encryption_public_key text not null,  -- Encryption Public Key (X25519 Base64)
   created_at timestamptz default now(),
-  expires_at timestamptz not null
+  last_seen timestamptz default now()
 );
 
 -- Messages table: Stores encrypted messages
-create table if not exists messages (
+create table messages (
   id uuid default gen_random_uuid() primary key,
-  chat_id uuid references chats(id) on delete cascade,
-  sender text not null, -- Public Key Hash of Sender
-  ciphertext text not null, -- Encrypted content
-  encrypted_session_key text not null, -- Encrypted AES key
+  sender text not null,                 -- Sender Address
+  receiver text not null,               -- Receiver Address
+  ciphertext text not null,             -- AES-GCM Encrypted Base64
+  encrypted_session_key text not null,  -- Metadata (Ephemeral PubKey + IV)
   created_at timestamptz default now(),
   expires_at timestamptz not null
 );
 
--- Create indexes for performance
-create index if not exists idx_users_pkey_hash on users(public_key_hash);
-create index if not exists idx_messages_chat_id on messages(chat_id);
-create index if not exists idx_chats_participants on chats(user_a, user_b);
+-- Indexes for performance
+create index idx_users_hash on users(public_key_hash);
+create index idx_messages_receiver on messages(receiver);
+create index idx_messages_expires on messages(expires_at);
