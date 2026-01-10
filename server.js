@@ -105,16 +105,60 @@ app.prepare().then(() => {
                     // Register Client
                     clients.set(hash, ws);
 
-                    // Update DB (Blindly upsert keys)
-                    await supabase.from('users').upsert({
-                        public_key_hash: hash,
-                        public_key: ws.authPending.identityPublicKey, // Storing as Text (Base64) now
-                        encryption_public_key: ws.authPending.encryptionPublicKey, // Text (Base64)
-                        last_seen: new Date()
-                    }, { onConflict: 'public_key_hash' });
+                    // --- Short Code Logic (Collision Safe) ---
+                    const { generateShortCode } = require('./shortcode');
+                    let shortCode = generateShortCode(hash, 0);
+                    let inserted = false;
+                    let attempts = 0;
 
-                    ws.send(JSON.stringify({ type: 'auth_success', address: hash }));
-                    console.log(`[Auth] ${hash.slice(0, 8)}... connected`);
+                    // Try to insert/upsert. If Short Code conflicts, regen with nonce.
+                    // Note: Supabase/Postgres basic upsert doesn't let us specifically catch *which* constraint failed easily in one round-trip logic depending on library.
+                    // Strategy:
+                    // 1. Check if user exists. If so, keep existing short_code to be stable.
+                    // 2. If new, try insert with code. If fail on unique_short_code, retry.
+
+                    // Fetch existing first to prefer stability
+                    const { data: existingUser } = await supabase.from('users').select('short_code').eq('public_key_hash', hash).single();
+
+                    if (existingUser) {
+                        shortCode = existingUser.short_code;
+                    } else {
+                        // New User: Loop until unique
+                        while (!inserted && attempts < 5) {
+                            // Generate Candidate
+                            if (attempts > 0) shortCode = generateShortCode(hash, attempts);
+
+                            const { error } = await supabase.from('users').insert({
+                                public_key_hash: hash,
+                                short_code: shortCode,
+                                public_key: ws.authPending.identityPublicKey,
+                                encryption_public_key: ws.authPending.encryptionPublicKey,
+                                last_seen: new Date()
+                            });
+
+                            if (!error) {
+                                inserted = true;
+                            } else {
+                                // Assume collision or error. If collision (23505), retry.
+                                if (error.code === '23505') {
+                                    console.log(`ShortCode Collision: ${shortCode} (Retry ${attempts + 1})`);
+                                    attempts++;
+                                } else {
+                                    console.error("DB Error", error);
+                                    break; // Fatal error
+                                }
+                            }
+                        }
+                    }
+
+                    // If we somehow failed to get a shortcode (e.g. existing user logic fell through or DB error), fallback to hash (shouldn't happen)
+
+                    ws.send(JSON.stringify({
+                        type: 'auth_success',
+                        address: hash,
+                        shortCode: shortCode
+                    }));
+                    console.log(`[Auth] ${shortCode} (${hash.slice(0, 8)}...) connected`);
                     return;
                 }
 

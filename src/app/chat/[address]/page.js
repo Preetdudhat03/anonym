@@ -61,8 +61,13 @@ export default function ChatPage({ params }) {
             </header>
 
             <div className={styles.messageList}>
-                <div className={styles.system}>
-                    Messages are End-to-End Encrypted. Only you and the recipient have the keys.
+                <div className={styles.system} style={{ background: 'rgba(50, 50, 50, 0.3)', padding: '1rem', borderRadius: 8, margin: '1rem', fontSize: '0.75rem', lineHeight: '1.5', textAlign: 'center', color: '#aaa' }}>
+                    <p style={{ margin: 0 }}>🔒 <strong>End-to-End Encrypted</strong> • Auto-deletes in 24h</p>
+                    <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>
+                        Messages are delivered offline if recipient is away.
+                        Once read or expired, they vanish.
+                        Screenshots are still possible—be honest.
+                    </p>
                 </div>
                 {messages.map((msg) => (
                     <div
