@@ -4,6 +4,7 @@ import { useChat } from '@/hooks/useChat';
 import styles from './page.module.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import LandingPage from './components/LandingPage';
 
 export default function Home() {
   const { identity, loading, createIdentity, resetIdentity } = useIdentity();
@@ -48,24 +49,7 @@ export default function Home() {
   // ... (Login View omitted, assumed unchanged) ...
 
   if (!identity) {
-    return (
-      <main className={styles.container}>
-        <div className={styles.card}>
-          <h1 className={styles.title}>Anonym</h1>
-          <p className={styles.subtitle}>End-to-End Encrypted 1-to-1 Chat</p>
-
-          <div style={{ textAlign: 'left', marginBottom: '2rem', fontSize: '0.9rem', color: '#aaa', lineHeight: '1.6' }}>
-            <p>🔒 <strong>Zero Knowledge:</strong> Server cannot read messages.</p>
-            <p>🔑 <strong>Client Keys:</strong> Identity lives in your browser.</p>
-            <p>⏳ <strong>Auto-Expiry:</strong> History vanishes automatically.</p>
-          </div>
-
-          <button onClick={createIdentity} className={styles.button}>
-            Generate Key Identity
-          </button>
-        </div>
-      </main>
-    );
+    return <LandingPage onEnter={createIdentity} />;
   }
 
   /* Removed misplaced hook */
@@ -73,7 +57,7 @@ export default function Home() {
   return (
     <main className={styles.container}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Dashboard</h1>
+        <h1 className={styles.title}>Anonym Dashboard</h1>
 
         <div style={{ marginBottom: '2rem' }}>
           <label className={styles.label}>Your Friend Code</label>

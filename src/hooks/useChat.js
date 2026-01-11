@@ -10,6 +10,10 @@ export function useChat(identity, peerAddress) {
     const peerKeyRef = useRef(null);
 
     useEffect(() => {
+        setMessages([]);
+    }, [peerAddress]);
+
+    useEffect(() => {
         if (!identity) return;
 
         setStatus('connecting');
@@ -50,14 +54,27 @@ export function useChat(identity, peerAddress) {
                     if (peerAddress) fetchPeerKey();
 
                     // Request History Sync (Restored by User Request)
-                    ws.send(JSON.stringify({ type: 'request_history' }));
+                    ws.send(JSON.stringify({
+                        type: 'request_history',
+                        targetAddress: peerAddress
+                    }));
                 }
 
                 // 3. Handle Incoming Message
                 else if (data.type === 'message') {
-                    const { payload, sender } = data;
+                    const { payload, sender, receiver } = data; // Get receiver too
                     const myEncKey = await db.getKey('encryption');
                     const isMe = sender === identity.address;
+
+                    // STRICT CLIENT-SIDE FILTER
+                    // 1. If it's NOT from me, it must be FROM the peer.
+                    // 2. If it IS from me, it must be TO the peer.
+                    if (!isMe && sender !== peerAddress) {
+                        return; // Ignore clutter from other people sending to me
+                    }
+                    if (isMe && (!receiver || receiver !== peerAddress)) {
+                        return; // Ignore "My" history messages if they are for others OR if server metadata is stale (missing receiver)
+                    }
 
                     let plainText = "";
 
@@ -139,11 +156,23 @@ export function useChat(identity, peerAddress) {
                 id: Date.now(),
                 text,
                 sender: 'me',
+                receiver: peerAddress, // Critical for consistent filtering if we refresh or re-render
                 isMe: true,
                 timestamp: new Date().toISOString()
             }]);
         }
     };
 
-    return { messages, status, sendMessage, shortCode };
+    const reportUser = (reason) => {
+        const ws = wsRef.current;
+        if (ws && ws.readyState === 1 && peerAddress) {
+            ws.send(JSON.stringify({
+                type: 'report_abuse',
+                reportedAddress: peerAddress,
+                reason: reason
+            }));
+        }
+    };
+
+    return { messages, status, sendMessage, shortCode, reportUser };
 }

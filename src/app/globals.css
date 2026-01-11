@@ -1,36 +1,73 @@
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --primary: #00ff9d;
-  --primary-glow: rgba(0, 255, 157, 0.4);
-  --secondary: #bd00ff;
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --font-mono: 'Courier New', Courier, monospace;
+  /* 🌑 Main Background (Charcoal Gray) */
+  --bg-main: #1E1E1E;
+
+  /* 🧱 Surface / Cards (Dark Slate) */
+  --bg-surface: #2A2A2A;
+  --bg-surface-hover: #333333;
+
+  /* 🤍 Text Colors */
+  --text-primary: #EDEDED;
+  /* Off-White */
+  --text-secondary: #9A9A9A;
+  /* Muted Gray */
+  --text-muted: #666666;
+
+  /* 🟢 Accent / Trust (Muted Teal) */
+  --accent-primary: #4FB3A2;
+  --accent-hover: #3AA190;
+
+  /* 🔒 Status Colors */
+  --status-secure: #7BC47F;
+  /* Soft Green */
+  --status-warning: #E0A96D;
+  /* Soft Amber */
+  --status-danger: #D9534F;
+  /* Soft Red */
+
+  /* Chat Bubbles */
+  --bubble-me: #3A3A3A;
+  --bubble-peer: #242424;
+
+  /* Borders (Subtle) */
+  --border-subtle: #333333;
 }
 
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
   box-sizing: border-box;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 button {
   cursor: pointer;
   font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }

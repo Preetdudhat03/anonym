@@ -118,7 +118,7 @@ app.prepare().then(() => {
                     // 2. If new, try insert with code. If fail on unique_short_code, retry.
 
                     // Fetch existing first to prefer stability
-                    const { data: existingUser } = await supabase.from('users').select('short_code').eq('public_key_hash', hash).single();
+                    const { data: existingUser } = await supabase.from('users').select('short_code, abuse_score').eq('public_key_hash', hash).single();
 
                     if (existingUser) {
                         shortCode = existingUser.short_code;
@@ -151,6 +151,13 @@ app.prepare().then(() => {
                         }
                     }
 
+                    // ENFORCEMENT: Check Ban Status
+                    if (existingUser && existingUser.abuse_score >= 5) {
+                        console.log(`[Auth Reject] ${hash.slice(0, 8)} is banned (Score: ${existingUser.abuse_score})`);
+                        ws.send(JSON.stringify({ type: 'error', message: 'Account suspended due to violations.' }));
+                        return ws.close(4003, "Account Suspended");
+                    }
+
                     // If we somehow failed to get a shortcode (e.g. existing user logic fell through or DB error), fallback to hash (shouldn't happen)
 
                     ws.send(JSON.stringify({
@@ -168,16 +175,28 @@ app.prepare().then(() => {
 
                     // Fetch messages where receiver = ws.address
                     // Limit to last 50 for performance
-                    const { data: history, error } = await supabase
+                    // Strict Conversation Filter: Only messages between ME and THIS PEER
+                    const { targetAddress } = data; // Client MUST send this in request_history now
+                    if (!targetAddress) return;
+
+                    const { data: rawHistory, error } = await supabase
                         .from('messages')
                         .select('*')
-                        .or(`receiver.eq.${ws.address},sender.eq.${ws.address}`) // Fetch both sent and received
+                        .or(`receiver.eq.${ws.address},sender.eq.${ws.address}`) // Fetch ALL my messages (sent or received)
                         .order('created_at', { ascending: false })
-                        .limit(50);
+                        .limit(100); // Fetch slightly more to ensure we find the specific chat history
 
-                    if (!error && history) {
+                    if (!error && rawHistory) {
+                        // SERVER-SIDE STRICT FILTER (Node.js Logic)
+                        // Ensure we ONLY return messages for the specific conversation pair.
+                        const filteredHistory = rawHistory.filter(msg => {
+                            const isIncoming = (msg.sender === targetAddress && msg.receiver === ws.address);
+                            const isOutgoing = (msg.sender === ws.address && msg.receiver === targetAddress);
+                            return isIncoming || isOutgoing;
+                        });
+
                         // Send back in reverse order (oldest first)
-                        history.reverse().forEach(msg => {
+                        filteredHistory.reverse().forEach(msg => {
                             // Determine if I was sender
                             const isMe = msg.sender === ws.address;
 
@@ -189,6 +208,7 @@ app.prepare().then(() => {
                             ws.send(JSON.stringify({
                                 type: 'message',
                                 sender: msg.sender,
+                                receiver: msg.receiver, // Add Receiver field for client filtering
                                 payload: {
                                     ciphertext: msg.ciphertext,
                                     ephemeralPublicKey: meta.ephemeralPublicKey,
@@ -255,6 +275,42 @@ app.prepare().then(() => {
                     }
                 }
 
+                if (data.type === 'report_abuse') {
+                    if (!ws.isAuthed) return ws.close(4001, "Not Authed");
+
+                    const { reportedAddress, reason } = data;
+                    if (!reportedAddress || !reason) return;
+
+                    // 1. Log Report
+                    await supabase.from('abuse_reports').insert({
+                        reporter_hash: ws.address,
+                        reported_hash: reportedAddress,
+                        reason: reason
+                    });
+
+                    // 2. Increment Abuse Score & Enforce Ban
+                    const { data: userData } = await supabase.from('users').select('abuse_score').eq('public_key_hash', reportedAddress).single();
+
+                    if (userData) {
+                        const newScore = (userData.abuse_score || 0) + 1;
+                        await supabase.from('users').update({ abuse_score: newScore }).eq('public_key_hash', reportedAddress);
+
+                        console.log(`[Abuse] ${reportedAddress.slice(0, 8)} score: ${newScore}`);
+
+                        // 3. IMMEDIATE ACTION: Shadowban / Kick
+                        // Threshold 3: Warning/Disconnect (Soft)
+                        // Threshold 5: Ban (Hard)
+                        if (newScore >= 5) {
+                            const reportedSocket = clients.get(reportedAddress);
+                            if (reportedSocket) {
+                                reportedSocket.send(JSON.stringify({ type: 'error', message: 'Account suspended due to abuse reports.' }));
+                                reportedSocket.close(4003, "Account Suspended");
+                                clients.delete(reportedAddress);
+                                console.log(`[BANNED] Kicked user ${reportedAddress.slice(0, 8)}`);
+                            }
+                        }
+                    }
+                }
             } catch (e) {
                 console.error("WS Error", e);
                 // Don't close immediately on minor JSON errors, but log.
@@ -267,7 +323,13 @@ app.prepare().then(() => {
     });
 
     server.listen(3000, (err) => {
-        if (err) throw err;
+        if (err) {
+            console.error("❌ Failed to start server:", err);
+            if (err.code === 'EADDRINUSE') {
+                console.error("👉 Port 3000 is already in use. Close other instances or use a different port.");
+            }
+            process.exit(1);
+        }
         console.log('> Server Ready on http://localhost:3000 (Ed25519 Mode)');
 
         // TTL Cleaner (Every 60s)
@@ -276,4 +338,7 @@ app.prepare().then(() => {
             if (error) console.error("TTL Error", error);
         }, 60000);
     });
+}).catch((err) => {
+    console.error("❌ Next.js App Preparation Failed:", err);
+    process.exit(1);
 });

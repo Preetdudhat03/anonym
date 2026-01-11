@@ -10,9 +10,11 @@ export default function ChatPage({ params }) {
     const peerAddress = decodeURIComponent(address);
 
     const { identity, loading: idLoading } = useIdentity();
-    const { messages, sendMessage, status } = useChat(identity, peerAddress);
+    const { messages, sendMessage, status, reportUser } = useChat(identity, peerAddress);
     const [input, setInput] = useState('');
     const [showDetails, setShowDetails] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [confirmReport, setConfirmReport] = useState(null);
     const messagesEndRef = useRef(null);
     const router = useRouter();
 
@@ -83,12 +85,81 @@ export default function ChatPage({ params }) {
                         <li><strong>Retention:</strong> Messages auto-delete after 24h.</li>
                         <li><strong>Scope:</strong> Session valid only while keys exist in browser.</li>
                     </ul>
-                    <button
-                        onClick={() => setShowDetails(false)}
-                        style={{ width: '100%', marginTop: 10, padding: 8, background: '#222', border: '1px solid #333', color: 'white', borderRadius: 4, cursor: 'pointer' }}
-                    >
-                        Close Details
-                    </button>
+
+                    <div style={{ display: 'flex', gap: 10, marginTop: 15 }}>
+                        <button
+                            onClick={() => setShowDetails(false)}
+                            style={{ flex: 1, padding: 8, background: '#222', border: '1px solid #333', color: 'white', borderRadius: 4, cursor: 'pointer' }}
+                        >
+                            Close Details
+                        </button>
+                        <button
+                            onClick={() => setShowReportModal(true)}
+                            style={{ flex: 1, padding: 8, background: '#331111', border: '1px solid #550000', color: '#ff4444', borderRadius: 4, cursor: 'pointer' }}
+                        >
+                            Report Abuse
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Report Abuse Modal */}
+            {showReportModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <div style={{ background: '#1a1a1a', padding: '1.5rem', borderRadius: 12, width: '90%', maxWidth: 400, border: '1px solid #333' }}>
+                        <h3 style={{ marginTop: 0, color: '#ff4444' }}>Report Abuse</h3>
+                        <p style={{ fontSize: '0.85rem', color: '#ccc', lineHeight: '1.5' }}>
+                            Reports are reviewed automatically. Repeated abuse may limit a user’s access.
+                        </p>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
+                            {!confirmReport ? (
+                                ['Harassment', 'Spam', 'Threats', 'Hate Speech', 'Other'].map(r => (
+                                    <button
+                                        key={r}
+                                        onClick={() => setConfirmReport(r)}
+                                        style={{ padding: '0.8rem', background: '#222', border: '1px solid #444', color: 'white', borderRadius: 6, textAlign: 'left', cursor: 'pointer', marginBottom: 8 }}
+                                    >
+                                        {r}
+                                    </button>
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                                    <p style={{ color: '#ff4444', fontWeight: 'bold' }}>Reject & Block User?</p>
+                                    <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: 15 }}>
+                                        Reason: {confirmReport}<br />
+                                        This conversation will be permanently removed.
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            reportUser(confirmReport.toLowerCase());
+                                            router.push('/');
+                                            // Optional: Custom toast instead of alert
+                                        }}
+                                        style={{ width: '100%', padding: '0.8rem', background: '#550000', border: '1px solid #770000', color: 'white', borderRadius: 4, cursor: 'pointer', marginBottom: 8 }}
+                                    >
+                                        Yes, Block & Report
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirmReport(null)}
+                                        style={{ width: '100%', padding: '0.8rem', background: 'transparent', border: '1px solid #333', color: '#aaa', borderRadius: 4, cursor: 'pointer' }}
+                                    >
+                                        Go Back
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={() => setShowReportModal(false)}
+                            style={{ width: '100%', padding: '0.8rem', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer' }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             )}
 
