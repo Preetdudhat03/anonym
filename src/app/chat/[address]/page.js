@@ -113,6 +113,8 @@ export default function ChatPage({ params }) {
                         <h3 style={{ marginTop: 0, color: '#ff4444' }}>Report Abuse</h3>
                         <p style={{ fontSize: '0.85rem', color: '#ccc', lineHeight: '1.5' }}>
                             Reports are reviewed automatically. Repeated abuse may limit a user’s access.
+                            <br /><br />
+                            {/*For urgent safety concerns, contact: <a href="mailto:support@anonym-app.com" style={{ color: '#aaa', textDecoration: 'underline' }}>support@anonym-app.com</a>*/}
                         </p>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>

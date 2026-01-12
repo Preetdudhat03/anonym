@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import styles from '../landing.module.css';
 
 export default function LandingPage({ onEnter }) {
@@ -89,7 +90,12 @@ export default function LandingPage({ onEnter }) {
             {/* 5. Data & Privacy */}
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Data Transparency</h2>
-                <p className={styles.text}>We believe you should know exactly what the server sees.</p>
+                <p className={styles.text}>
+                    We believe you should know exactly what the server sees.
+                    <Link href="/privacy" className={styles.link} style={{ marginLeft: '0.5rem', color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 'bold' }}>
+                        Read full Privacy Policy →
+                    </Link>
+                </p>
 
                 <div className={styles.infoBox}>
                     <ul className={styles.list}>
@@ -166,9 +172,20 @@ export default function LandingPage({ onEnter }) {
                 >
                     {allConsented ? "I Understand — Enter Chat" : "Review & Accept All to Continue"}
                 </button>
+
+                <p className={styles.consentDisclaimer}>
+                    By continuing, you acknowledge that you have read and understood our <Link href="/privacy" className={styles.link}>Privacy Policy</Link>.
+                </p>
             </section>
 
-            <footer style={{ textAlign: 'center', marginTop: '4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+            <footer className={styles.footer}>
+                <div className={styles.footerLinks}>
+                    <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
+                    <span className={styles.separator}>·</span>
+                    <Link href="/terms" className={styles.footerLink}>Terms of Use</Link>
+                    <span className={styles.separator}>·</span>
+                    <Link href="/abuse" className={styles.footerLink}>Abuse Policy</Link>
+                </div>
                 <p>Anonym © 2026. Zero warranties. Use at your own risk.</p>
             </footer>
         </div>
