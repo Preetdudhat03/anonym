@@ -216,16 +216,16 @@ export default function PrivacyPage() {
             </section>
 
             {/* 14. Contact */}
-            <section style={{ marginBottom: '2.5rem' }}>
+            {/*<section style={{ marginBottom: '2.5rem' }}>
                 <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>14. Contact</h2>
                 <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                     Because Anonym does not collect personal information, support communication is limited.
                 </p>
-                {/*<p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
                     For general inquiries or abuse reports: <br />
                     <a href="mailto:support@anonym-app.com" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>support@anonym-app.com</a>
-                </p>*/}
-            </section>
+                </p>
+            </section>*/}
 
             {/* Final Note */}
             <section style={{ marginTop: '4rem', padding: '2rem', background: 'var(--bg-surface)', borderRadius: '8px', textAlign: 'center' }}>
