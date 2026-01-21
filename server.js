@@ -14,10 +14,16 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 // Redis (Rate Limiting Support)
-const redis = new Redis({
-    lazyConnect: true,
-    retryStrategy: (times) => Math.min(times * 50, 2000)
-});
+const redisUrl = process.env.REDIS_URL;
+const redis = redisUrl
+    ? new Redis(redisUrl, {
+        lazyConnect: true,
+        retryStrategy: (times) => Math.min(times * 50, 2000)
+    })
+    : new Redis({
+        lazyConnect: true,
+        retryStrategy: (times) => Math.min(times * 50, 2000)
+    });
 redis.on('error', (err) => console.log('Redis Error (Ignorable if local):', err.message));
 
 // In-Memory Socket Map (Address -> WS)
@@ -322,15 +328,16 @@ app.prepare().then(() => {
         });
     });
 
-    server.listen(3000, (err) => {
+    const port = process.env.PORT || 3000;
+    server.listen(port, (err) => {
         if (err) {
             console.error("❌ Failed to start server:", err);
             if (err.code === 'EADDRINUSE') {
-                console.error("👉 Port 3000 is already in use. Close other instances or use a different port.");
+                console.error(`👉 Port ${port} is already in use. Close other instances or use a different port.`);
             }
             process.exit(1);
         }
-        console.log('> Server Ready on http://localhost:3000 (Ed25519 Mode)');
+        console.log(`> Server Ready on http://localhost:${port} (Ed25519 Mode)`);
 
         // TTL Cleaner (Every 60s)
         setInterval(async () => {
