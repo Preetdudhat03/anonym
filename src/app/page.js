@@ -20,30 +20,69 @@ export default function Home() {
     return <div className={styles.container} style={{ color: '#666' }}>Loading security context...</div>;
   }
 
+  /* 
+   * Security & Validation Constants 
+   * Regex ensures input is strictly whitelisted to prevent injection attacks 
+   */
+  const SHORT_CODE_REGEX = /^[A-Z2-7]{4}-[A-Z2-7]{4}-[A-Z2-7]{4}$/;
+  const HEX_ADDRESS_REGEX = /^[0-9a-fA-F]{64}$/;
+
   const handleStartChat = async (e) => {
     e.preventDefault();
     setLookupError('');
-    let target = targetAddress.trim();
 
-    if (!target) return;
+    // 1. Sanitization
+    let rawInput = targetAddress.trim();
 
-    // Check if it's a Short Code (format: XXXX-XXXX-XXXX)
-    if (target.includes('-') && target.length <= 15) {
+    if (!rawInput) return;
+
+    // 2. Identify Type & Validate
+    // Case A: Short Code (Normalize to Uppercase for UX)
+    const normalizedShortCode = rawInput.toUpperCase();
+
+    if (SHORT_CODE_REGEX.test(normalizedShortCode)) {
       try {
-        const res = await fetch(`/api/code/${target}`);
+        const res = await fetch(`/api/code/${normalizedShortCode}`);
         if (!res.ok) {
           setLookupError('Friend Code not found');
           return;
         }
         const data = await res.json();
-        target = data.address; // Use the Real Hash
+
+        // Paranoid Validation of Server Response
+        if (!HEX_ADDRESS_REGEX.test(data.address)) {
+          throw new Error("Malicious Server Response detected");
+        }
+
+        router.push(`/chat/${data.address}`);
+        return;
       } catch (err) {
-        setLookupError('Lookup failed');
+        console.error(err);
+        setLookupError('Secure Lookup Failed');
         return;
       }
     }
 
-    router.push(`/chat/${target}`);
+    // Case B: Direct Hex Address (Advanced)
+    if (HEX_ADDRESS_REGEX.test(rawInput)) {
+      try {
+        const res = await fetch(`/api/users/${rawInput}`);
+        if (!res.ok) {
+          setLookupError('Address not active or does not exist in database');
+          return;
+        }
+        // Address exists, proceed
+        router.push(`/chat/${rawInput}`);
+        return;
+      } catch (err) {
+        console.error("Hex Lookup Failed", err);
+        setLookupError('Network Error during validation');
+        return;
+      }
+    }
+
+    // Case C: Invalid Input
+    setLookupError('Invalid Code Format. Expected: XXXX-XXXX-XXXX');
   };
 
   // ... (Login View omitted, assumed unchanged) ...

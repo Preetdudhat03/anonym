@@ -180,9 +180,9 @@ export default function ChatPage({ params }) {
                         className={`${styles.message} ${msg.isMe ? styles.sent : styles.received}`}
                     >
                         {msg.text}
-                        <div style={{ fontSize: '0.6rem', opacity: 0.5, marginTop: 4, textAlign: msg.isMe ? 'right' : 'left' }}>
+                        {/*<div style={{ fontSize: '0.6rem', opacity: 0.5, marginTop: 4, textAlign: msg.isMe ? 'right' : 'left' }}>
                             {new Date(msg.timestamp).toLocaleTimeString()}
-                        </div>
+                        </div>*/}
                     </div>
                 ))}
                 <div ref={messagesEndRef} />

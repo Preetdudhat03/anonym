@@ -59,6 +59,31 @@ export function useIdentity() {
     }
 
     async function resetIdentity() {
+        if (identity && identity.privateKey) {
+            try {
+                const timestamp = Date.now();
+                const msg = `DELETE_ACCOUNT:${timestamp}`;
+
+                // Sign Deletion Request
+                const privBytes = crypto.fromBase64(identity.privateKey);
+                const sigBytes = crypto.signChallenge(privBytes, msg);
+                const signature = crypto.toBase64(sigBytes);
+
+                // Attempt Server Wipe
+                await fetch('/api/users/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        publicKey: identity.publicKey,
+                        signature,
+                        timestamp
+                    })
+                });
+            } catch (e) {
+                console.warn("Server-side deletion failed (Offline?)", e);
+            }
+        }
+
         await db.clearKeys();
         setIdentity(null);
     }
