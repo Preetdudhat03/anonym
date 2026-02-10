@@ -66,22 +66,17 @@ export function useChat(identity, peerAddress) {
                     const myEncKey = await db.getKey('encryption');
                     const isMe = sender === identity.address;
 
-                    console.log(`[Client] Msg Received. Sender: ${sender.slice(0, 8)}... Receiver: ${receiver?.slice(0, 8)}... Me: ${identity.address.slice(0, 8)}...`);
-
                     // STRICT CLIENT-SIDE FILTER
                     // 1. If it's NOT from me, it must be FROM the peer.
                     // 2. If it IS from me, it must be TO the peer.
                     if (!isMe && sender !== peerAddress) {
-                        console.warn("[Client] Filtered: Incoming message from wrong sender", sender);
                         return; // Ignore clutter from other people sending to me
                     }
                     if (isMe && (!receiver || receiver !== peerAddress)) {
                         // Check for case mismatch or potential encoding issues
                         if (receiver && peerAddress && receiver.toLowerCase() === peerAddress.toLowerCase()) {
-                            // Allow if case-insentive match, but warn (should ideally match)
-                            console.log("[Client] Case-insensitive match on receiver.");
+                            // Allow if case-insentive match
                         } else {
-                            console.warn(`[Client] Filtered: My sent message is for ${receiver}, but current chat is ${peerAddress}`);
                             return;
                         }
                     }
@@ -99,7 +94,6 @@ export function useChat(identity, peerAddress) {
                             myEncKey.privateKey,
                             payload
                         );
-                        console.log("[Client] Decryption Success");
                     } catch (decErr) {
                         console.warn("Decryption Failed:", decErr.message);
                         // If decryption fails, it likely means we received the Recipient's copy
