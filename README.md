@@ -39,5 +39,8 @@ The server is **Blind** to content but **Trusted** for routing.
 1. `npm install`
 2. `npm run dev` (Runs custom server on port 3000)
 3. Ensure Supabase env vars are set in `.env.local`
+4. **Database Setup**:
+   - Run the SQL queries in `db/schema.sql` in your Supabase SQL Editor.
+   - If upgrading, run `db/migrations/01_add_sender_encryption.sql`.
 
 **Note**: This application MUST be run in a Secure Context (HTTPS or localhost) for Web Crypto API to function.

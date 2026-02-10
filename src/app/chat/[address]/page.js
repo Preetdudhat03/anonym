@@ -3,6 +3,8 @@ import { useIdentity } from '@/hooks/useIdentity';
 import { useChat } from '@/hooks/useChat';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
+import { useSessionExpiry } from '@/hooks/useSessionExpiry';
+import SessionExpiryBanner from '@/app/components/SessionExpiryBanner';
 import styles from './page.module.css';
 
 export default function ChatPage({ params }) {
@@ -22,11 +24,13 @@ export default function ChatPage({ params }) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const { expiryTimestamp, isExpired, loading: expiryLoading } = useSessionExpiry(peerAddress);
+
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isExpired]); // Scroll when expired state changes too
 
-    if (idLoading) return <div className={styles.container} style={{ justifyContent: 'center', alignItems: 'center' }}>Loading security context...</div>;
+    if (idLoading || expiryLoading) return <div className={styles.container} style={{ justifyContent: 'center', alignItems: 'center' }}>Loading security context...</div>;
 
     if (!identity) {
         if (typeof window !== 'undefined') router.push('/');
@@ -35,7 +39,7 @@ export default function ChatPage({ params }) {
 
     const handleSend = (e) => {
         e.preventDefault();
-        if (input.trim()) {
+        if (input.trim() && !isExpired) {
             sendMessage(input.trim());
             setInput('');
         }
@@ -61,6 +65,8 @@ export default function ChatPage({ params }) {
 
                 <div style={{ width: 40 }} /> {/* Spacer for centering */}
             </header>
+
+            <SessionExpiryBanner expiresAt={expiryTimestamp} />
 
             {/* Advanced Session Details Modal */}
             {showDetails && (
@@ -166,26 +172,47 @@ export default function ChatPage({ params }) {
             )}
 
             <div className={styles.messageList}>
-                <div className={styles.system} style={{ background: 'rgba(50, 50, 50, 0.3)', padding: '1rem', borderRadius: 8, margin: '1rem', fontSize: '0.75rem', lineHeight: '1.5', textAlign: 'center', color: '#aaa' }}>
-                    <p style={{ margin: 0 }}>🔒 <strong>End-to-End Encrypted</strong> • Auto-deletes in 24h</p>
-                    <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>
-                        Messages are delivered offline if recipient is away.
-                        Once read or expired, they vanish.
-                        Screenshots are still possible—be honest.
-                    </p>
-                </div>
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`${styles.message} ${msg.isMe ? styles.sent : styles.received}`}
-                    >
-                        {msg.text}
-                        {/*<div style={{ fontSize: '0.6rem', opacity: 0.5, marginTop: 4, textAlign: msg.isMe ? 'right' : 'left' }}>
-                            {new Date(msg.timestamp).toLocaleTimeString()}
-                        </div>*/}
+                {!isExpired && (
+                    <>
+                        <div className={styles.system} style={{ background: 'rgba(50, 50, 50, 0.3)', padding: '1rem', borderRadius: 8, margin: '1rem', fontSize: '0.75rem', lineHeight: '1.5', textAlign: 'center', color: '#aaa' }}>
+                            <p style={{ margin: 0 }}>🔒 <strong>End-to-End Encrypted</strong> • Auto-deletes in 24h</p>
+                            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>
+                                Messages are delivered offline if recipient is away.
+                                Once read or expired, they vanish.
+                                Screenshots are still possible—be honest.
+                            </p>
+                        </div>
+                        {messages.map((msg) => (
+                            <div
+                                key={msg.id}
+                                className={`${styles.message} ${msg.isMe ? styles.sent : styles.received}`}
+                            >
+                                {msg.text}
+                                {/*<div style={{ fontSize: '0.6rem', opacity: 0.5, marginTop: 4, textAlign: msg.isMe ? 'right' : 'left' }}>
+                                    {new Date(msg.timestamp).toLocaleTimeString()}
+                                </div>*/}
+                            </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                    </>
+                )}
+                {isExpired && (
+                    <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: '#666',
+                        textAlign: 'center',
+                        marginTop: '2rem'
+                    }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }}>⌛</div>
+                        <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Session Expired</p>
+                        <p style={{ fontSize: '0.75rem', opacity: 0.6 }}>Messages have been permanently destroyed.</p>
                     </div>
-                ))}
-                <div ref={messagesEndRef} />
+                )}
             </div>
 
             <form className={styles.inputArea} onSubmit={handleSend}>
@@ -193,10 +220,11 @@ export default function ChatPage({ params }) {
                     className={styles.input}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type a secure message..."
-                    autoFocus
+                    placeholder={isExpired ? "Session expired" : "Type a secure message..."}
+                    autoFocus={!isExpired}
+                    disabled={isExpired}
                 />
-                <button type="submit" className={styles.sendButton} disabled={status !== 'connected' || !input}>
+                <button type="submit" className={styles.sendButton} disabled={status !== 'connected' || !input || isExpired}>
                     ➤
                 </button>
             </form>

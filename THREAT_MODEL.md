@@ -4,6 +4,7 @@
 *   **Assets to Protect**:
     *   **User Identity**: The link between a physical person and their cryptographic keys.
     *   **Message Content**: The plaintext of private conversations.
+    *   **Sender History**: Implementation now stores a "Sender Copy" of messages to improve UX. This is also encrypted but adds a data point.
     *   **Social Graph**: Usage patterns revealing who is talking to whom.
 *   **Adversaries**:
     *   **Compromised Server**: Attacker has full read/write access to the database and Redis.
@@ -13,6 +14,7 @@
 
 ## 2. Security Guarantees (What IS Protected)
 1.  **Content Confidentiality**: The server cannot decrypt messages. Only the holder of the private key can.
+    *   **Sender Copies**: Even the new "Sender Copy" is encrypted with the Sender's Public Key. The server holds two encrypted blobs (Sender's + Recipient's) but can read neither.
 2.  **Message Integrity**: Modified ciphertext will fail decryption (AES-GCM Auth Tag).
 3.  **Identity Unlinkability**: No phone numbers or emails are collected. Users are just random cryptographic strings.
 4.  **Forward Secrecy (Limited)**: Messages are encrypted with ephemeral keys. Compromise of the Long-Term Identity Key does NOT decrypt past messages (assuming ephemeral keys were deleted).

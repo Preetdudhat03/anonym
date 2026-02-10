@@ -35,7 +35,7 @@
 }
 
 .addressBox {
-  background: #111;
+  background: var(--bg-surface);
   padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid var(--border-subtle);

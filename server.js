@@ -47,6 +47,22 @@ app.prepare().then(() => {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // --- Schema Verification (Dev Mode Helper) ---
+    // Checks if the 'ciphertext_sender' column exists to prevent "vanishing messages" bug.
+    (async () => {
+        const { error } = await supabase.from('messages').select('ciphertext_sender').limit(1);
+        if (error && error.message.includes('column "ciphertext_sender" does not exist')) {
+            console.error("\n\n🔴 CRITICAL ERROR: Database Migration Missing 🔴");
+            console.error("The 'messages' table is missing the 'ciphertext_sender' column.");
+            console.error("Sender history WILL NOT be saved until you run the migration.");
+            console.error("👉 Run 'db/migrations/01_add_sender_encryption.sql' in your Supabase SQL Editor.\n\n");
+        } else if (error) {
+            console.warn("Schema Check Warning:", error.message);
+        } else {
+            console.log("✅ Database Schema: Verified (Sender Self-Encryption Enabled)");
+        }
+    })();
+
     const server = createServer((req, res) => {
         const parsedUrl = parse(req.url, true);
         handle(req, res, parsedUrl);
@@ -179,22 +195,19 @@ app.prepare().then(() => {
                 if (data.type === 'request_history') {
                     if (!ws.isAuthed) return ws.close(4001, "Not Authed");
 
-                    // Fetch messages where receiver = ws.address
-                    // Limit to last 50 for performance
-                    // Strict Conversation Filter: Only messages between ME and THIS PEER
-                    const { targetAddress } = data; // Client MUST send this in request_history now
+                    // Fetch messages where receiver = ws.address OR sender = ws.address
+                    const { targetAddress } = data;
                     if (!targetAddress) return;
 
                     const { data: rawHistory, error } = await supabase
                         .from('messages')
                         .select('*')
-                        .or(`receiver.eq.${ws.address},sender.eq.${ws.address}`) // Fetch ALL my messages (sent or received)
+                        .or(`receiver.eq.${ws.address},sender.eq.${ws.address}`)
                         .order('created_at', { ascending: false })
-                        .limit(100); // Fetch slightly more to ensure we find the specific chat history
+                        .limit(100);
 
                     if (!error && rawHistory) {
-                        // SERVER-SIDE STRICT FILTER (Node.js Logic)
-                        // Ensure we ONLY return messages for the specific conversation pair.
+                        // SERVER-SIDE STRICT FILTER per Conversation
                         const filteredHistory = rawHistory.filter(msg => {
                             const isIncoming = (msg.sender === targetAddress && msg.receiver === ws.address);
                             const isOutgoing = (msg.sender === ws.address && msg.receiver === targetAddress);
@@ -203,24 +216,37 @@ app.prepare().then(() => {
 
                         // Send back in reverse order (oldest first)
                         filteredHistory.reverse().forEach(msg => {
-                            // Determine if I was sender
                             const isMe = msg.sender === ws.address;
 
-                            // We need to reconstruct the payload for the client to decrypt
-                            // We stored { ephemeralPublicKey, iv } in 'encrypted_session_key' column
+                            // Determine which payload to send based on ownership
+                            let rawMeta = isMe ? msg.encrypted_session_key_sender : msg.encrypted_session_key;
+                            let rawCiphertext = isMe ? msg.ciphertext_sender : msg.ciphertext;
+
+                            // Fallback for legacy messages (if sender copy doesn't exist)
+                            // If I am sender but no sender-copy exists, I can't decrypt the receiver copy.
+                            // We send nothing or a marker. Sending receiver copy will just cause decryption error.
+                            if (isMe && !rawCiphertext) {
+                                // Skip or send marker? Let's skip to keep UI clean.
+                                // Or send a dummy to show "Message Sent (Encrypted)" placeholder?
+                                // Let's send the receiver copy anyway so the client shows *something* (even if undecryptable)
+                                // This maintains timeline consistency.
+                                rawCiphertext = msg.ciphertext;
+                                rawMeta = msg.encrypted_session_key;
+                            }
+
                             let meta = {};
-                            try { meta = JSON.parse(msg.encrypted_session_key); } catch (e) { }
+                            try { meta = JSON.parse(rawMeta); } catch (e) { }
 
                             ws.send(JSON.stringify({
                                 type: 'message',
                                 sender: msg.sender,
-                                receiver: msg.receiver, // Add Receiver field for client filtering
+                                receiver: msg.receiver,
                                 payload: {
-                                    ciphertext: msg.ciphertext,
+                                    ciphertext: rawCiphertext,
                                     ephemeralPublicKey: meta.ephemeralPublicKey,
                                     iv: meta.iv,
                                     timestamp: msg.created_at,
-                                    isHistory: true // Flag to tell client not to notify/sound
+                                    isHistory: true
                                 }
                             }));
                         });
@@ -231,54 +257,72 @@ app.prepare().then(() => {
                 if (data.type === 'message') {
                     if (!ws.isAuthed) return ws.close(4001, "Not Authed");
 
-                    const { targetAddress, payload } = data;
-                    // Payload contains { ephemeralPublicKey, iv, ciphertext, expiresAt }
+                    const { targetAddress, payload, payloadSelf } = data;
+                    // payload: For Recipient
+                    // payloadSelf: For Sender (Optional but expected now)
 
                     // A. Enforce Expiration Cap (Max 24h)
                     const clientExpiry = new Date(payload.expires_at || Date.now() + 86400000);
                     const maxExpiry = new Date(Date.now() + 86400000);
                     const finalExpiry = clientExpiry > maxExpiry ? maxExpiry : clientExpiry;
 
-                    // B. Store Blob (Blind Relay)
-                    // We store the Whole Payload JSON object as 'ciphertext' text column to simplify schema
-                    // Or we split it. Schema says 'ciphertext', 'encrypted_session_key' etc.
-                    // Let's adapt to existing schema:
-                    // schema: ciphertext, encrypted_session_key.
-                    // New Packet: { ephemeralPublicKey, iv, ciphertext }. All are needed for decryption.
-                    // We can pack {ephemeralPublicKey, iv} into `encrypted_session_key` column since that's just a text field.
-
-                    const packedMeta = JSON.stringify({
+                    // B. Pack Metadata
+                    const packedMetaReceiver = JSON.stringify({
                         ephemeralPublicKey: payload.ephemeralPublicKey,
                         iv: payload.iv
                     });
 
-                    await supabase.from('messages').insert({
-                        sender: ws.address,
-                        receiver: targetAddress,
-                        ciphertext: payload.ciphertext,
-                        encrypted_session_key: packedMeta,
-                        expires_at: finalExpiry.toISOString()
-                    });
+                    let packedMetaSender = null;
+                    let ciphertextSender = null;
+
+                    if (payloadSelf) {
+                        packedMetaSender = JSON.stringify({
+                            ephemeralPublicKey: payloadSelf.ephemeralPublicKey,
+                            iv: payloadSelf.iv
+                        });
+                        ciphertextSender = payloadSelf.ciphertext;
+                    }
+
+                    try {
+                        const { error: insertError } = await supabase.from('messages').insert({
+                            sender: ws.address,
+                            receiver: targetAddress,
+                            ciphertext: payload.ciphertext,
+                            encrypted_session_key: packedMetaReceiver,
+
+                            // New Columns for Self-Encryption
+                            ciphertext_sender: ciphertextSender,
+                            encrypted_session_key_sender: packedMetaSender,
+
+                            expires_at: finalExpiry.toISOString()
+                        });
+
+                        if (insertError) {
+                            console.error("❌ DB Insert Failed:", insertError.message, insertError.details);
+                        }
+                    } catch (dbErr) {
+                        console.error("❌ DB Exception:", dbErr.message);
+                    }
 
                     // C. Live Relay (If Online)
                     const recipient = clients.get(targetAddress);
                     if (recipient && recipient.readyState === 1) {
-                        // Artificial Delay for Metadata Obfuscation
                         setTimeout(() => {
                             recipient.send(JSON.stringify({
                                 type: 'message',
-                                sender: ws.address, // We reveal SENDER Address
+                                sender: ws.address,
                                 payload: {
                                     ciphertext: payload.ciphertext,
-                                    // Expand packed meta back for client convenience?
-                                    // Client expects packet structure.
                                     ephemeralPublicKey: payload.ephemeralPublicKey,
                                     iv: payload.iv,
                                     timestamp: new Date()
                                 }
                             }));
-                        }, Math.random() * 200 + 50); // 50-250ms Delay
+                        }, Math.random() * 200 + 50);
                     }
+
+                    // Note: We don't echo back to sender via WS because client optimistically updates UI.
+                    // But if client refreshes, they will get the `ciphertext_sender` from history logic above.
                 }
 
                 if (data.type === 'report_abuse') {

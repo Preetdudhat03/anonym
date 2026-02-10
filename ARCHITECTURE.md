@@ -56,20 +56,27 @@
 ```
 
 ### 3.3 Encryption Steps (Sender)
-1.  **Input**: `MessagePayload` (String), `Receiver_Encryption_Pub` (X25519).
-2.  **Ephemeral**: Generate `Ephemeral_Keypair` (X25519).
-3.  **Diffie-Hellman**: `Shared_Secret_Raw = X25519(Ephemeral_Priv, Receiver_Encryption_Pub)`.
-4.  **KDF**: `AES_Key = HKDF(secret=Shared_Secret_Raw, salt=empty, info="anonym_v1_aes", len=256)`.
-5.  **Encrypt**: `Ciphertext = AES-GCM(Key=AES_Key, IV=Random(12), Data=MessagePayload)`.
-6.  **Destroy**: `Ephemeral_Priv`, `Shared_Secret_Raw`, `AES_Key`.
-7.  **Send**: Packet with `Ephemeral_Pub`.
+1.  **Input**: `MessagePayload` (String).
+2.  **Recipient Path**:
+    *   **Ephemeral**: Generate `Ephemeral_Keypair_Recip` (X25519).
+    *   **Diffie-Hellman**: `Secret_Recip = X25519(Ephemeral_Priv_Recip, Recipient_Encryption_Pub)`.
+    *   **KDF**: `Key_Recip = HKDF(Secret_Recip)`.
+    *   **Encrypt**: `Ciphertext_Recip = AES-GCM(Key_Recip, Random_IV, MessagePayload)`.
+3.  **Self Path (New)**:
+    *   **Ephemeral**: Generate `Ephemeral_Keypair_Self` (X25519).
+    *   **Diffie-Hellman**: `Secret_Self = X25519(Ephemeral_Priv_Self, My_Encryption_Pub)`.
+    *   **KDF**: `Key_Self = HKDF(Secret_Self)`.
+    *   **Encrypt**: `Ciphertext_Self = AES-GCM(Key_Self, Random_IV_2, MessagePayload)`.
+4.  **Send**: Packet containing BOTH `Ciphertext_Recip` and `Ciphertext_Self`.
 
-### 3.4 Decryption Steps (Receiver)
+### 3.4 Decryption Steps (Receiver / Sender)
 1.  **Input**: Packet.
-2.  **Diffie-Hellman**: `Shared_Secret_Raw = X25519(My_Encryption_Priv, Packet.Ephemeral_Pub)`.
-3.  **KDF**: `AES_Key = HKDF(secret=Shared_Secret_Raw, salt=empty, info="anonym_v1_aes", len=256)`.
-4.  **Decrypt**: `Plaintext = AES-GCM(Key=AES_Key, IV=Packet.IV, Data=Packet.Ciphertext)`.
-5.  **Destroy**: `Shared_Secret_Raw`, `AES_Key`.
+2.  **Selection**: 
+    *   If `Me == Recipient`, select `Ciphertext_Recip`.
+    *   If `Me == Sender`, select `Ciphertext_Self`.
+3.  **Diffie-Hellman**: `Shared_Secret = X25519(My_Encryption_Priv, Packet.Ephemeral_Pub)`.
+4.  **KDF**: `AES_Key = HKDF(Shared_Secret)`.
+5.  **Decrypt**: `Plaintext = AES-GCM(Key=AES_Key, IV=Packet.IV, Data=Packet.Ciphertext)`.
 
 ## 4. Metadata Minimization Strategies
 *   **Padding**: All messages padded to nearest 256 bytes before encryption.
@@ -80,16 +87,28 @@
 
 ```sql
 CREATE TABLE users (
-  address text PRIMARY KEY, -- Hash of Ed25519 Pub Key
-  identity_pub_key text NOT NULL,
-  encryption_pub_key text NOT NULL,
+  id uuid PRIMARY KEY,
+  public_key_hash text UNIQUE NOT NULL, -- The Real Address
+  short_code text UNIQUE NOT NULL,
+  public_key text NOT NULL,
+  encryption_public_key text NOT NULL,
   last_seen timestamp
 );
 
 CREATE TABLE messages (
   id uuid PRIMARY KEY,
-  receiver_address text NOT NULL, -- Indexed
-  ciphertext text NOT NULL, -- Base64 blob including IV/EphemeralKey
+  sender text NOT NULL,   -- Address Hash
+  receiver text NOT NULL, -- Address Hash
+  
+  -- Recipient Copy
+  ciphertext text NOT NULL, 
+  encrypted_session_key text NOT NULL, -- Metadata (Ephemeral PubKey + IV)
+
+  -- Sender Copy
+  ciphertext_sender text,
+  encrypted_session_key_sender text,
+
+  created_at timestamp DEFAULT now(),
   expires_at timestamp NOT NULL
 );
 ```

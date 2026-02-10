@@ -66,39 +66,63 @@ export function useChat(identity, peerAddress) {
                     const myEncKey = await db.getKey('encryption');
                     const isMe = sender === identity.address;
 
+                    console.log(`[Client] Msg Received. Sender: ${sender.slice(0, 8)}... Receiver: ${receiver?.slice(0, 8)}... Me: ${identity.address.slice(0, 8)}...`);
+
                     // STRICT CLIENT-SIDE FILTER
                     // 1. If it's NOT from me, it must be FROM the peer.
                     // 2. If it IS from me, it must be TO the peer.
                     if (!isMe && sender !== peerAddress) {
+                        console.warn("[Client] Filtered: Incoming message from wrong sender", sender);
                         return; // Ignore clutter from other people sending to me
                     }
                     if (isMe && (!receiver || receiver !== peerAddress)) {
-                        return; // Ignore "My" history messages if they are for others OR if server metadata is stale (missing receiver)
+                        // Check for case mismatch or potential encoding issues
+                        if (receiver && peerAddress && receiver.toLowerCase() === peerAddress.toLowerCase()) {
+                            // Allow if case-insentive match, but warn (should ideally match)
+                            console.log("[Client] Case-insensitive match on receiver.");
+                        } else {
+                            console.warn(`[Client] Filtered: My sent message is for ${receiver}, but current chat is ${peerAddress}`);
+                            return;
+                        }
                     }
 
                     let plainText = "";
 
-                    if (!isMe) {
-                        try {
-                            plainText = await crypto.decryptMessage(
-                                myEncKey.privateKey,
-                                payload
-                            );
-                        } catch (decErr) {
-                            console.error("Decryption Failed", decErr);
+                    // Decrypt Payload (Works for both Incoming and Self-History)
+                    // Server serves the correct encrypted payload for "me" in both cases.
+                    try {
+                        if (isMe && !myEncKey) {
+                            throw new Error("Missing Identity Key");
+                        }
+
+                        plainText = await crypto.decryptMessage(
+                            myEncKey.privateKey,
+                            payload
+                        );
+                        console.log("[Client] Decryption Success");
+                    } catch (decErr) {
+                        console.warn("Decryption Failed:", decErr.message);
+                        // If decryption fails, it likely means we received the Recipient's copy
+                        // because the Sender's copy (ciphertext_sender) was missing in the DB.
+                        if (isMe) {
+                            plainText = "🔒 Encrypted Message (Copy not saved to server yet)";
+                        } else {
                             plainText = "⚠️ Decryption Error";
                         }
-                    } else {
-                        plainText = "(Sent Message - Encrypted)";
                     }
 
-                    setMessages(prev => [...prev, {
-                        id: Date.now() + Math.random(),
-                        text: plainText,
-                        sender: sender,
-                        isMe: isMe,
-                        timestamp: payload.timestamp || new Date().toISOString()
-                    }]);
+                    setMessages(prev => {
+                        // Avoid duplicates from history sync
+                        if (prev.some(m => m.timestamp === (payload.timestamp || ''))) return prev;
+
+                        return [...prev, {
+                            id: Date.now() + Math.random(),
+                            text: plainText,
+                            sender: sender,
+                            isMe: isMe,
+                            timestamp: payload.timestamp || new Date().toISOString()
+                        }].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Ensure order
+                    });
                 }
 
             } catch (err) {
@@ -117,12 +141,6 @@ export function useChat(identity, peerAddress) {
     const fetchPeerKey = async () => {
         if (!peerAddress) return;
         try {
-            // Check if peerAddress is a Short Code (contains hyphen) or full hash
-            // If short code, verify or fetch full address? 
-            // The API /api/users/[address] handles HASH.
-            // We should assume peerAddress prop *is* the FULL HASH in this hook.
-            // The UI is responsible for resolving code -> hash before passing it here.
-
             const res = await fetch(`/api/users/${peerAddress}`);
             if (!res.ok) throw new Error("Peer not found");
             const json = await res.json();
@@ -139,7 +157,19 @@ export function useChat(identity, peerAddress) {
             return;
         }
 
-        const packet = await crypto.encryptMessage(peerKeyRef.current, text);
+        // 1. Fetch My Key (for Self-Encryption)
+        const myEncKey = await db.getKey('encryption');
+        if (!myEncKey) {
+            alert("Security Error: Identity missing");
+            return;
+        }
+
+        // 2. Encrypt for Peer
+        const packetReceiver = await crypto.encryptMessage(peerKeyRef.current, text);
+
+        // 3. Encrypt for Self (New)
+        const packetSelf = await crypto.encryptMessage(myEncKey.publicKey, text);
+
         const ws = wsRef.current;
 
         if (ws && ws.readyState === 1) {
@@ -147,16 +177,20 @@ export function useChat(identity, peerAddress) {
                 type: 'message',
                 targetAddress: peerAddress,
                 payload: {
-                    ...packet,
+                    ...packetReceiver,
                     expires_at: new Date(Date.now() + 86400000).toISOString()
+                },
+                payloadSelf: {
+                    ...packetSelf
                 }
             }));
 
+            // Optimistic Update
             setMessages(prev => [...prev, {
                 id: Date.now(),
                 text,
                 sender: 'me',
-                receiver: peerAddress, // Critical for consistent filtering if we refresh or re-render
+                receiver: peerAddress,
                 isMe: true,
                 timestamp: new Date().toISOString()
             }]);
