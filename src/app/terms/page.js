@@ -21,77 +21,62 @@ export default function TermsOfService() {
 
             <main>
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>1. Acceptance of Terms</h2>
+                    <h2 className={styles.sectionTitle}>1. Agreement to Terms</h2>
                     <p className={styles.text}>
-                        By accessing or using the Anonym platform ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, you must immediately cease using the Service.
-                    </p>
-                    <p className={styles.text}>
-                        We reserve the right to modify these Terms at any time. Continued use constitutes acceptance of updated terms.
+                        By using Anonym, you agree to these rules. Ideally, we want you to use our tool safely and responsibly. If you don't agree, please close this tab.
                     </p>
                 </section>
 
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>2. "As Is" Disclaimer</h2>
+                    <h2 className={styles.sectionTitle}>2. Use At Your Own Risk ("As Is")</h2>
                     <div className={styles.warningBox}>
-                        <strong>NO WARRANTY:</strong> THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND.
+                        <strong>NO PROMISES:</strong> This software is experimental. It might break. It might have bugs.
                     </div>
                     <p className={styles.text}>
-                        Anonym is experimental software. We expressly disclaim all warranties, including but not limited to fitness for a particular purpose and non-infringement.
+                        We do not guarantee that the service will always be online or that it is 100% bug-free.
                     </p>
                     <ul className={styles.list}>
-                        <li className={styles.listItem}><strong>Data Loss:</strong> We are not liable for any lost messages, keys, or data due to browser clearing, server failure, or network issues.</li>
-                        <li className={styles.listItem}><strong>Security Breaches:</strong> While we use industry-standard encryption, no system is impenetrable. You use the service at your own risk.</li>
-                        <li className={styles.listItem}><strong>Uptime:</strong> We do not guarantee continuous, uninterrupted access to the Service.</li>
+                        <li className={styles.listItem}><strong>Data Loss:</strong> If your browser crashes or you clear your cookies, your account is gone. We cannot fix it.</li>
+                        <li className={styles.listItem}><strong>Not for Life-Critical Use:</strong> Do not rely on Anonym for emergency services or situations where failure could cause harm.</li>
                     </ul>
                 </section>
 
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>3. User Responsibilities & Conduct</h2>
+                    <h2 className={styles.sectionTitle}>3. Be A Good Human</h2>
                     <p className={styles.text}>
-                        You are solely responsible for your use of the Service and for any content you transmit.
+                        You are responsible for what you type.
                     </p>
                     <div className={styles.infoBox}>
-                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1rem', marginBottom: '0.5rem' }}>Prohibited Activities</h3>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1rem', marginBottom: '0.5rem' }}>Do Not:</h3>
                         <ul className={styles.list} style={{ fontSize: '0.9rem' }}>
-                            <li className={styles.listItem}>Using the Service for illegal activities (e.g., fraud, distributing malware, harassment).</li>
-                            <li className={styles.listItem}>Attempting to reverse-engineer, decompile, or attack the Service infrastructure.</li>
-                            <li className={styles.listItem}>Automated scraping or spamming of other users via Short Codes.</li>
+                            <li className={styles.listItem}>Use Anonym for illegal acts (fraud, malware, violence).</li>
+                            <li className={styles.listItem}>Spam strangers with friend codes.</li>
+                            <li className={styles.listItem}>Try to hack or break our servers.</li>
                         </ul>
                     </div>
-                    <p className={styles.text} style={{ marginTop: '1rem' }}>
-                        <strong>Key Management:</strong> You are responsible for safeguarding your device and browser storage. If you lose access to your device or clear your browser data, your identity is lost forever.
-                    </p>
                 </section>
 
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>4. Ephemeral Nature of content</h2>
+                    <h2 className={styles.sectionTitle}>4. Disappearing Messages</h2>
                     <p className={styles.text}>
-                        You acknowledge that Anonym is designed as an ephemeral communication tool.
+                        Understand that this is a temporary chat tool.
                     </p>
                     <ul className={styles.list}>
-                        <li className={styles.listItem}>Messages are automatically deleted from our servers after 24 hours.</li>
-                        <li className={styles.listItem}>We do not maintain backups of message content.</li>
-                        <li className={styles.listItem}>Once deleted (locally or remotely), data cannot be recovered by any means.</li>
+                        <li className={styles.listItem}>Messages delete automatically after 24 hours.</li>
+                        <li className={styles.listItem}>Once deleted, they are gone forever. No backups.</li>
                     </ul>
                 </section>
 
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>5. Termination</h2>
+                    <h2 className={styles.sectionTitle}>5. We Can Ban You</h2>
                     <p className={styles.text}>
-                        We reserve the right to suspend or terminate your access to the Service at our sole discretion, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason.
-                    </p>
-                </section>
-
-                <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>6. Governing Law</h2>
-                    <p className={styles.text}>
-                        These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which the Service is operated, without regard to its conflict of law provisions.
+                        If we detect abuse (like spamming thousands of requests), we can block your IP address to protect other users.
                     </p>
                 </section>
 
                 <footer className={styles.footer} style={{ borderTop: 'none', textAlign: 'left', paddingLeft: 0 }}>
                     <p>
-                        <strong>Questions?</strong> See our <Link href="/privacy" className={styles.link}>Privacy Policy</Link> concerning data handling.
+                        <strong>Questions?</strong> Check our <Link href="/privacy" className={styles.link}>Privacy Policy</Link> to see how we handle data.
                     </p>
                 </footer>
             </main>

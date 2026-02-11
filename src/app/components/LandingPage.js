@@ -24,7 +24,7 @@ export default function LandingPage({ onEnter }) {
         <div className={styles.container}>
             {/* 1. Hero Section */}
             <section className={styles.hero}>
-                <div style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', fontSize: '0.9rem' }}>Anonym Secure Relay</div>
+                <div style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', fontSize: '0.9rem' }}>Anonym</div>
                 <h1 className={styles.heroTitle}>Private. Ephemeral. Yours.</h1>
                 <p className={styles.heroSub}>
                     Zero-Knowledge messaging architecture.<br />
