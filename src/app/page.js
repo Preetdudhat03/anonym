@@ -4,6 +4,7 @@ import { useChat } from '@/hooks/useChat';
 import styles from './page.module.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import LandingPage from './components/LandingPage';
 
 export default function Home() {
@@ -135,12 +136,11 @@ export default function Home() {
 
           {/* TRUST PANEL */}
           <div style={{ textAlign: 'left', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', fontSize: '0.8rem', color: '#999', marginBottom: '2rem' }}>
-            <p style={{ marginBottom: 8 }}>🔒 <strong>Privacy Summary</strong></p>
+            <p style={{ marginBottom: 8 }}>🔒 <strong>Zero-Knowledge Privacy</strong></p>
             <ul style={{ paddingLeft: 20, margin: 0 }}>
-              <li>No accounts, emails, or phone numbers.</li>
-              <li>Messages are encrypted on your device.</li>
-              <li>Recipients can read messages only if you share your code.</li>
-              <li>Identity exists only in this browser.</li>
+              <li><strong>No Server Decryption:</strong> We cannot read your chats.</li>
+              <li><strong>Ephemeral:</strong> Messages self-destruct in 24h.</li>
+              <li><strong>Client-Side Keys:</strong> Identity lives only in this browser.</li>
             </ul>
           </div>
 
@@ -176,7 +176,16 @@ export default function Home() {
         >
           Destroy Identity & Wipe Data
         </button>
-      </div>
-    </main>
+
+        <footer style={{ marginTop: '4rem', borderTop: '1px solid #333', paddingTop: '1rem', fontSize: '0.75rem', color: '#666' }}>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <Link href="/privacy" style={{ color: '#888', textDecoration: 'none' }}>Privacy Policy</Link>
+            <span>·</span>
+            <Link href="/terms" style={{ color: '#888', textDecoration: 'none' }}>Terms of Service</Link>
+          </div>
+          Anonym © 2026. Secure Relay.
+        </footer>
+      </div >
+    </main >
   );
 }

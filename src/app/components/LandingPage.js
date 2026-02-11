@@ -24,107 +24,85 @@ export default function LandingPage({ onEnter }) {
         <div className={styles.container}>
             {/* 1. Hero Section */}
             <section className={styles.hero}>
-                <div style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', fontSize: '0.9rem' }}>Anonym</div>
+                <div style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', fontSize: '0.9rem' }}>Anonym Secure Relay</div>
                 <h1 className={styles.heroTitle}>Private. Ephemeral. Yours.</h1>
-                <p className={styles.heroSub}>End-to-end encrypted messaging with no accounts and no identity tracking.</p>
-                <button className={styles.button} style={{ maxWidth: 200 }} onClick={scrollToConsent}>
-                    Enter Secure Chat
-                </button>
+                <p className={styles.heroSub}>
+                    Zero-Knowledge messaging architecture.<br />
+                    End-to-End Encryption (E2EE) by default.<br />
+                    No sign-ups. No tracking. No history.
+                </p>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button className={styles.button} style={{ maxWidth: 200, marginTop: '2rem' }} onClick={scrollToConsent}>
+                        Enter Secure Chat
+                    </button>
+                    <Link href="/privacy">
+                        <button className={styles.button} style={{ maxWidth: 200, marginTop: '2rem', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                            Read Security Policy
+                        </button>
+                    </Link>
+                </div>
             </section>
 
-            {/* 2. What This Is */}
+            {/* 2. Determine Our Integrity */}
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>What This Is</h2>
+                <h2 className={styles.sectionTitle}>Our Integrity Model</h2>
                 <div className={styles.grid}>
                     <div className={styles.text}>
-                        <p>Anonym is a direct, one-to-one encrypted chat tool.</p>
-                        <p>There are no servers managing your identity. There is no password to reset. Your identity is a cryptographic key generated right here in your browser. This key never leaves your device unencrypted and cannot be recovered by us.</p>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.2rem', marginBottom: '1rem' }}>We Cannot Be Subpoenaed For Content</h3>
+                        <p>
+                            Anonym is designed to protect your privacy even from us. We store encrypted blobs that look like random noise. We hold no decryption keys.
+                        </p>
+                        <p style={{ marginTop: '1rem' }}>
+                            Your Identity is a cryptographic Key Pair (Ed25519) generated locally in your browser. We never see your Private Key.
+                        </p>
                     </div>
                     <div className={styles.infoBox}>
                         <ul className={styles.list}>
-                            <li className={styles.listItem}><strong>No Accounts:</strong> You do not sign up.</li>
-                            <li className={styles.listItem}><strong>No Data Mining:</strong> We generally don't know who you are.</li>
-                            <li className={styles.listItem}><strong>Browser Based:</strong> No installation required.</li>
+                            <li className={styles.listItem}><strong>Protocol:</strong> Double-Ratchet inspired encryption.</li>
+                            <li className={styles.listItem}><strong>Message Cipher:</strong> AES-GCM (256-bit).</li>
+                            <li className={styles.listItem}><strong>Key Exchange:</strong> X25519 (Elliptic Curve).</li>
+                            <li className={styles.listItem}><strong>Signing:</strong> Ed25519 signatures for authenticating commands.</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            {/* 3. What This Is NOT */}
+            {/* 3. The Rules of Engagement */}
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle} style={{ borderColor: 'var(--status-danger)' }}>What This Is NOT</h2>
+                <h2 className={styles.sectionTitle}>Rules of Engagement</h2>
                 <div className={styles.warningBox}>
-                    <ul className={styles.list}>
-                        <li className={styles.listItem}><strong>Not WhatsApp/Signal:</strong> We do not use phone numbers to find friends.</li>
-                        <li className={styles.listItem}><strong>Not Recoverable:</strong> If you clear cookies, your account is gone forever.</li>
-                        <li className={styles.listItem}><strong>Not network anonymity tool (like Tor):</strong> Your ISP can still see you are connecting to our server. We hide <em>what</em> you say, not that you are online.</li>
-                        <li className={styles.listItem}><strong>Not Screenshot Proof:</strong> The recipient can always take a photo of their screen. Trust your peer.</li>
-                        <li className={styles.listItem}><strong>Not File Storage:</strong> Text only. No images, no files.</li>
+                    <h3 style={{ color: '#ff6b6b', marginTop: 0, fontSize: '1rem' }}>⚠️ This Platform Is Unforgiving by Design</h3>
+                    <ul className={styles.list} style={{ marginTop: '1rem' }}>
+                        <li className={styles.listItem}><strong>One Device Only:</strong> Your identity lives in this browser. If you switch devices, you are a new person.</li>
+                        <li className={styles.listItem}><strong>No Recovery:</strong> Forget your keys? Clear your cache? Your account is gone forever. We cannot help you.</li>
+                        <li className={styles.listItem}><strong>24-Hour TTL:</strong> All messages self-destruct from the server 24 hours after creation.</li>
+                        <li className={styles.listItem}><strong>Mutual Kill Switch:</strong> Either participant can delete the chat history for <strong>both</strong> parties instantly.</li>
                     </ul>
                 </div>
             </section>
 
-            {/* 4. How It Works */}
+            {/* 4. Data Transparency */}
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>How It Works</h2>
-                <div className={styles.grid}>
-                    <div className={styles.infoBox} style={{ borderLeft: '2px solid var(--border-subtle)' }}>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>1. Generate</h3>
-                        <p className={styles.text} style={{ fontSize: '0.9rem' }}>Your device creates a unique digital key. This key never leaves your device.</p>
-                    </div>
-                    <div className={styles.infoBox} style={{ borderLeft: '2px solid var(--border-subtle)' }}>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>2. Connect</h3>
-                        <p className={styles.text} style={{ fontSize: '0.9rem' }}>Share your Friend Code. The app establishes an encrypted session routed through a relay server.</p>
-                    </div>
-                    <div className={styles.infoBox} style={{ borderLeft: '2px solid var(--border-subtle)' }}>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>3. Encrypt</h3>
-                        <p className={styles.text} style={{ fontSize: '0.9rem' }}>Messages are locked before leaving your browser. Only the recipient has the key to unlock them.</p>
-                    </div>
-                    <div className={styles.infoBox} style={{ borderLeft: '2px solid var(--border-subtle)' }}>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>4. Destroy</h3>
-                        <p className={styles.text} style={{ fontSize: '0.9rem' }}>History auto-deletes after 24 hours. Wipe your keys to vanish instantly.</p>
-                    </div>
-                </div>
-            </section>
-
-            {/* 5. Data & Privacy */}
-            <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Data Transparency</h2>
+                <h2 className={styles.sectionTitle}>Radical Transparency</h2>
                 <p className={styles.text}>
-                    We believe you should know exactly what the server sees.
-                    <Link href="/privacy" className={styles.link} style={{ marginLeft: '0.5rem', color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 'bold' }}>
-                        Read full Privacy Policy →
-                    </Link>
+                    We collect minimal metadata to function.
                 </p>
-
-                <div className={styles.infoBox}>
-                    <ul className={styles.list}>
-                        <li className={styles.listItem}><strong>Message Content:</strong> <span style={{ color: 'var(--accent-primary)' }}>Unknown (Encrypted Blob)</span></li>
-                        <li className={styles.listItem}><strong>Your Identity:</strong> A SHA-256 Hash of your Public Key(a non-reversible identifier).</li>
-                        <li className={styles.listItem}><strong>Metadata:</strong> Connection time, message size, and rough sender/receiver relationship (to route packets).</li>
-                        <li className={styles.listItem}><strong>Persistence:</strong> Encrypted messages are stored for up to 24 hours to handle offline delivery, then hard-deleted.</li>
-                    </ul>
-                </div>
-            </section>
-
-            {/* 6. Warnings & Security */}
-            <section className={styles.section}>
-                <h2 className={styles.sectionTitle} style={{ borderColor: 'var(--status-warning)' }}>Boundaries & Expectations</h2>
                 <div className={styles.grid}>
-                    <div>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>Who Should Use This</h3>
-                        <ul className={styles.list} style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            <li className={styles.listItem}>Short-lived, private conversations.</li>
-                            <li className={styles.listItem}>People who don't want to link chats to a phone number.</li>
-                            <li className={styles.listItem}>Temporary secure communication.</li>
+                    <div className={styles.infoBox} style={{ borderLeft: '2px solid var(--accent-primary)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>What We Know</h3>
+                        <ul className={styles.list} style={{ fontSize: '0.9rem' }}>
+                            <li className={styles.listItem}>Your Public Key Hash (ID).</li>
+                            <li className={styles.listItem}>When you connected (Timestamp).</li>
+                            <li className={styles.listItem}>Approximate message size (in bytes).</li>
+                            <li className={styles.listItem}>Your IP address (ephemeral logs).</li>
                         </ul>
                     </div>
-                    <div>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>Who Should NOT Use This</h3>
-                        <ul className={styles.list} style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            <li className={styles.listItem}>Anyone needing long-term history (years).</li>
-                            <li className={styles.listItem}>People requiring protection against nation-state level surveillance. (Use Tor/Signal).</li>
-                            <li className={styles.listItem}>Those needing legal evidence trails.</li>
+                    <div className={styles.infoBox} style={{ borderLeft: '2px solid var(--status-danger)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: 10 }}>What We Don't Know</h3>
+                        <ul className={styles.list} style={{ fontSize: '0.9rem' }}>
+                            <li className={styles.listItem}>Your Name, Email, or Phone.</li>
+                            <li className={styles.listItem}>Who you are messaging (we route by ID, we don't know the human).</li>
+                            <li className={styles.listItem}><strong>What you are saying.</strong></li>
                         </ul>
                     </div>
                 </div>
@@ -133,7 +111,9 @@ export default function LandingPage({ onEnter }) {
             {/* 10. Consent Gate */}
             <section id="consent-gate" className={styles.consentSection}>
                 <h2 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: '0.5rem', textAlign: 'center' }}>Initialization Consent</h2>
-                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Before entering, confirm you understand the following limitations.</p>
+                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                    By proceeding, you verify that you understand the following:
+                </p>
 
                 <label className={styles.checkboxLabel}>
                     <input
@@ -142,7 +122,7 @@ export default function LandingPage({ onEnter }) {
                         checked={consents.noRecovery}
                         onChange={() => toggleConsent('noRecovery')}
                     />
-                    <span>I understand that if I clear my browser data, my identity and messages are lost forever with no recovery possible.</span>
+                    <span><strong>No Recovery:</strong> If I lose my browser data, my identity is permanently lost.</span>
                 </label>
 
                 <label className={styles.checkboxLabel}>
@@ -152,7 +132,7 @@ export default function LandingPage({ onEnter }) {
                         checked={consents.tempStorage}
                         onChange={() => toggleConsent('tempStorage')}
                     />
-                    <span>I understand that encrypted messages are temporarily stored on the relay server for delivery (max 24h).</span>
+                    <span><strong>Zero-Knowledge:</strong> Anonym cannot decrypt my messages or recover them for legal requests.</span>
                 </label>
 
                 <label className={styles.checkboxLabel}>
@@ -162,7 +142,7 @@ export default function LandingPage({ onEnter }) {
                         checked={consents.metadata}
                         onChange={() => toggleConsent('metadata')}
                     />
-                    <span>I understand that while content is hidden, standard network metadata (connection time, size) is visible to the server.</span>
+                    <span><strong>Ephemeral:</strong> Everything I send will be deleted automatically within 24 hours.</span>
                 </label>
 
                 <button
@@ -170,11 +150,11 @@ export default function LandingPage({ onEnter }) {
                     disabled={!allConsented}
                     onClick={onEnter}
                 >
-                    {allConsented ? "I Understand — Enter Chat" : "Review & Accept All to Continue"}
+                    {allConsented ? "Initialize Identity & Enter" : "Acknowledge Risks to Continue"}
                 </button>
 
                 <p className={styles.consentDisclaimer}>
-                    By continuing, you acknowledge that you have read and understood our <Link href="/privacy" className={styles.link}>Privacy Policy</Link>.
+                    I have read and agree to the <Link href="/terms" className={styles.link}>Terms of Service</Link> and <Link href="/privacy" className={styles.link}>Privacy Policy</Link>.
                 </p>
             </section>
 
@@ -182,11 +162,9 @@ export default function LandingPage({ onEnter }) {
                 <div className={styles.footerLinks}>
                     <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
                     <span className={styles.separator}>·</span>
-                    <Link href="/terms" className={styles.footerLink}>Terms of Use</Link>
-                    <span className={styles.separator}>·</span>
-                    <Link href="/abuse" className={styles.footerLink}>Abuse Policy</Link>
+                    <Link href="/terms" className={styles.footerLink}>Terms of Service</Link>
                 </div>
-                <p>Anonym © 2026. Zero warranties. Use at your own risk.</p>
+                <p>Anonym © 2026. Experimental Secure Software.</p>
             </footer>
         </div>
     );
