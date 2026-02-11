@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useSessionExpiry } from '@/hooks/useSessionExpiry';
 import SessionExpiryBanner from '@/app/components/SessionExpiryBanner';
+import * as db from '@/lib/db';
+import * as cryptoLib from '@/lib/crypto';
 import styles from './page.module.css';
 
 export default function ChatPage({ params }) {
@@ -12,10 +14,11 @@ export default function ChatPage({ params }) {
     const peerAddress = decodeURIComponent(address);
 
     const { identity, loading: idLoading } = useIdentity();
-    const { messages, sendMessage, status, reportUser } = useChat(identity, peerAddress);
+    const { messages, sendMessage, status, reportUser, signalDeletion } = useChat(identity, peerAddress);
     const [input, setInput] = useState('');
     const [showDetails, setShowDetails] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
+    const [showDestroyModal, setShowDestroyModal] = useState(false);
     const [confirmReport, setConfirmReport] = useState(null);
     const messagesEndRef = useRef(null);
     const router = useRouter();
@@ -45,6 +48,45 @@ export default function ChatPage({ params }) {
         }
     };
 
+    const handleDestroySession = async () => {
+        if (!identity) return;
+
+        try {
+            // 1. Authenticate Deletion Request
+            const timestamp = Date.now().toString();
+            const signature = cryptoLib.signChallenge(
+                cryptoLib.fromBase64(identity.privateKey),
+                `DELETE_SESSION:${timestamp}`
+            );
+
+            // 2. Signal Peer via WebSocket (Real-time kick)
+            // We await a small delay to ensure the WS frame leaves the buffer before we navigate away/close socket.
+            signalDeletion(peerAddress);
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 3. Send Server Request (Best Effort, Data Wipe)
+            // We verify identity so server can delete our messages.
+            await fetch(`/api/session?peerAddress=${encodeURIComponent(peerAddress)}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-identity-pub': identity.publicKey,
+                    'x-signature': cryptoLib.toBase64(signature),
+                    'x-timestamp': timestamp
+                }
+            });
+        } catch (e) {
+            console.error("Server deletion failed", e);
+            // Proceed anyway - local destruction is paramount
+        }
+
+        // 3. Local Reset (Stay logged in, just clear this chat view)
+        // db.clearKeys(); // <-- REMOVED per user request
+        // localStorage.clear(); // <-- REMOVED per user request
+
+        // 4. Force Redirect
+        window.location.href = '/';
+    };
+
     return (
         <div className={styles.container}>
             <header className={styles.header}>
@@ -63,7 +105,24 @@ export default function ChatPage({ params }) {
                     <span style={{ fontSize: '0.7rem', color: '#666' }}>Keys exist only on your devices <span style={{ fontSize: '0.8rem' }}>ⓘ</span></span>
                 </div>
 
-                <div style={{ width: 40 }} /> {/* Spacer for centering */}
+                <div style={{ width: 40 }} /> {/* Spacer */}
+
+                <button
+                    onClick={() => setShowDestroyModal(true)}
+                    style={{
+                        background: '#330000',
+                        border: '1px solid #550000',
+                        color: '#ff4444',
+                        fontSize: '0.7rem',
+                        padding: '6px 12px',
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        marginLeft: 10
+                    }}
+                >
+                    Delete Chat
+                </button>
             </header>
 
             <SessionExpiryBanner expiresAt={expiryTimestamp} />
@@ -171,6 +230,58 @@ export default function ChatPage({ params }) {
                 </div>
             )}
 
+            {/* Destroy Session Modal */}
+            {
+                showDestroyModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.9)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                        <div style={{ background: '#1a0505', padding: '1.5rem', borderRadius: 12, width: '90%', maxWidth: 400, border: '1px solid #550000', textAlign: 'center' }}>
+                            <h3 style={{ marginTop: 0, color: '#ff4444', fontSize: '1.2rem' }}>⚠️ Delete Conversation?</h3>
+
+                            <p style={{ fontSize: '0.9rem', color: '#ccc', lineHeight: '1.6', margin: '1rem 0' }}>
+                                This will <strong>permanently delete</strong> the chat history for <strong>BOTH</strong> you and the recipient.
+                                <br /><br />
+                                Your account will remain active.
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <button
+                                    onClick={handleDestroySession}
+                                    style={{
+                                        padding: '1rem',
+                                        background: '#ff0000',
+                                        border: 'none',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        borderRadius: 6,
+                                        cursor: 'pointer',
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    Delete for Everyone
+                                </button>
+
+                                <button
+                                    onClick={() => setShowDestroyModal(false)}
+                                    style={{
+                                        padding: '0.8rem',
+                                        background: 'transparent',
+                                        border: '1px solid #444',
+                                        color: '#aaa',
+                                        borderRadius: 6,
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
             <div className={styles.messageList}>
                 {!isExpired && (
                     <>
@@ -228,6 +339,6 @@ export default function ChatPage({ params }) {
                     ➤
                 </button>
             </form>
-        </div>
+        </div >
     );
 }

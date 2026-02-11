@@ -361,6 +361,31 @@ app.prepare().then(() => {
                         }
                     }
                 }
+
+                // --- 6. Signal Conversation Deletion ---
+                if (data.type === 'signal_delete') {
+                    if (!ws.isAuthed) return;
+
+                    const { targetAddress } = data;
+                    if (!targetAddress) return;
+
+                    // Notify Peer
+                    console.log(`[Signal Delete] From: ${ws.address.slice(0, 8)} To: ${targetAddress.slice(0, 8)}`);
+                    const recipient = clients.get(targetAddress);
+                    if (recipient) {
+                        if (recipient.readyState === 1) {
+                            recipient.send(JSON.stringify({
+                                type: 'conversation_deleted',
+                                sender: ws.address
+                            }));
+                            console.log(`[Signal Delete] Sent to ${targetAddress.slice(0, 8)}`);
+                        } else {
+                            console.log(`[Signal Delete] Recipient found but not ready (State: ${recipient.readyState})`);
+                        }
+                    } else {
+                        console.log(`[Signal Delete] Recipient not found in memory map.`);
+                    }
+                }
             } catch (e) {
                 console.error("WS Error", e);
                 // Don't close immediately on minor JSON errors, but log.

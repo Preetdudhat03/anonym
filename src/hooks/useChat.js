@@ -119,6 +119,14 @@ export function useChat(identity, peerAddress) {
                     });
                 }
 
+                // 4. Handle Deletion Signal
+                else if (data.type === 'conversation_deleted') {
+                    if (data.sender === peerAddress) {
+                        alert("This conversation has been deleted by the peer.");
+                        window.location.href = '/';
+                    }
+                }
+
             } catch (err) {
                 console.error("WS Message Error", err);
             }
@@ -202,5 +210,23 @@ export function useChat(identity, peerAddress) {
         }
     };
 
-    return { messages, status, sendMessage, shortCode, reportUser };
+    const signalDeletion = (targetPeer) => {
+        const ws = wsRef.current;
+        console.log(`[useChat] Signaling deletion to ${targetPeer}`);
+        if (ws) {
+            if (ws.readyState === 1) {
+                ws.send(JSON.stringify({
+                    type: 'signal_delete',
+                    targetAddress: targetPeer
+                }));
+                console.log("[useChat] Deletion signal sent.");
+            } else {
+                console.warn(`[useChat] Cannot signal deletion: WS State is ${ws.readyState}`);
+            }
+        } else {
+            console.warn("[useChat] Cannot signal deletion: No WS connection.");
+        }
+    };
+
+    return { messages, status, sendMessage, shortCode, reportUser, signalDeletion };
 }
