@@ -1,6 +1,6 @@
 {
   "name": "anonym",
-  "version": "1.1.4",
+  "version": "1.5.4",
   "private": true,
   "scripts": {
     "dev": "node --max-old-space-size=4096 server.js",
