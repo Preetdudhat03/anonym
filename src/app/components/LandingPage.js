@@ -163,8 +163,11 @@ export default function LandingPage({ onEnter }) {
                     <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
                     <span className={styles.separator}>·</span>
                     <Link href="/terms" className={styles.footerLink}>Terms of Service</Link>
+                    <span className={styles.separator}>·</span>
+                    <Link href="/abuse" className={styles.footerLink}>Abuse Policy</Link>
                 </div>
                 <p>Anonym © 2026. Experimental Secure Software.</p>
+                <p>Developed by <Link href="https://github.com/Preetdudhat03" className={styles.link}>Preet Dudhat</Link></p>
             </footer>
         </div>
     );

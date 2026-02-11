@@ -1,175 +1,180 @@
 'use client';
 import Link from 'next/link';
+import styles from '../landing.module.css';
 
 export default function AbusePage() {
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '4rem 1.5rem', color: 'var(--text-primary)' }}>
+        <div className={styles.container}>
             {/* Back Link */}
-            <Link href="/" style={{ color: 'var(--accent-primary)', textDecoration: 'none', marginBottom: '2rem', display: 'inline-block' }}>
-                ← Back to Home
-            </Link>
+            <div style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)', fontWeight: 'bold', letterSpacing: '1.5px', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span>← Back to Home</span>
+                </Link>
+            </div>
 
             {/* Header */}
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Abuse Reporting & Enforcement Policy</h1>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem', fontSize: '0.9rem', fontStyle: 'italic' }}>
-                Last updated: January 2026
-            </p>
+            <header className={styles.hero} style={{ marginBottom: '3rem', borderBottom: 'none', paddingBottom: 0 }}>
+                <h1 className={styles.heroTitle}>Abuse Reporting Policy</h1>
+                <p className={styles.heroSub} style={{ fontSize: '0.9rem' }}>
+                    <strong>Last updated:</strong> January 2026
+                </p>
+            </header>
 
             {/* 1. Purpose */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>1. Purpose of This Policy</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>1. Purpose of This Policy</h2>
+                <p className={styles.text}>
                     Anonym is designed for private, anonymous, and ephemeral communication. Privacy does <strong>not</strong> mean absence of responsibility. This policy explains how abuse is handled while preserving Anonym’s zero-knowledge and end‑to‑end encrypted architecture.
                 </p>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                <p className={styles.text}>
                     We cannot read messages. We can act on <strong>behavioral patterns, reports, and cryptographic identifiers</strong>.
                 </p>
             </section>
 
             {/* 2. What Counts as Abuse */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>2. What Counts as Abuse</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Abuse includes, but is not limited to:</p>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc', marginBottom: '1rem' }}>
-                    <li>Harassment, threats, or intimidation</li>
-                    <li>Repeated unsolicited contact (spam)</li>
-                    <li>Attempts to coerce, blackmail, or extort</li>
-                    <li>Impersonation or deception</li>
-                    <li>Sharing illegal content or coordinating illegal activity</li>
-                    <li>Attempts to exploit or attack the Anonym service</li>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>2. What Counts as Abuse</h2>
+                <p className={styles.text}>Abuse includes, but is not limited to:</p>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>Harassment, threats, or intimidation</li>
+                    <li className={styles.listItem}>Repeated unsolicited contact (spam)</li>
+                    <li className={styles.listItem}>Attempts to coerce, blackmail, or extort</li>
+                    <li className={styles.listItem}>Impersonation or deception</li>
+                    <li className={styles.listItem}>Sharing illegal content or coordinating illegal activity</li>
+                    <li className={styles.listItem}>Attempts to exploit or attack the Anonym service</li>
                 </ul>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                <p className={styles.text}>
                     Anonym does <strong>not</strong> judge opinions or private consensual conversations.
                 </p>
             </section>
 
             {/* 3. What We Can and Cannot See */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>3. What We Can and Cannot See</h2>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>3. What We Can and Cannot See</h2>
 
-                <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-                    <div style={{ padding: '1rem', border: '1px solid var(--status-danger)', borderRadius: '8px', background: 'rgba(217, 83, 79, 0.05)' }}>
-                        <h3 style={{ fontSize: '1.1rem', color: 'var(--status-danger)', marginBottom: '0.5rem' }}>We CANNOT see:</h3>
-                        <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc' }}>
-                            <li>Message content</li>
-                            <li>Images or files (file sharing is not supported)</li>
-                            <li>User identities (names, emails, phone numbers)</li>
+                <div className={styles.grid}>
+                    <div className={styles.infoBox} style={{ border: '1px solid var(--status-danger)', background: 'rgba(217, 83, 79, 0.05)' }}>
+                        <h3 style={{ fontSize: '1.1rem', color: 'var(--status-danger)', marginBottom: '0.5rem', marginTop: 0 }}>We CANNOT see:</h3>
+                        <ul className={styles.list}>
+                            <li className={styles.listItem}>Message content</li>
+                            <li className={styles.listItem}>Images or files (file sharing is not supported)</li>
+                            <li className={styles.listItem}>User identities (names, emails, phone numbers)</li>
                         </ul>
                     </div>
 
-                    <div style={{ padding: '1rem', border: '1px solid var(--status-secure)', borderRadius: '8px', background: 'rgba(123, 196, 127, 0.05)' }}>
-                        <h3 style={{ fontSize: '1.1rem', color: 'var(--status-secure)', marginBottom: '0.5rem' }}>We CAN see:</h3>
-                        <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc' }}>
-                            <li>Anonymous cryptographic addresses</li>
-                            <li>Connection timestamps</li>
-                            <li>Message frequency and size</li>
-                            <li>Abuse reports linked to an address</li>
+                    <div className={styles.infoBox} style={{ border: '1px solid var(--status-secure)', background: 'rgba(123, 196, 127, 0.05)' }}>
+                        <h3 style={{ fontSize: '1.1rem', color: 'var(--status-secure)', marginBottom: '0.5rem', marginTop: 0 }}>We CAN see:</h3>
+                        <ul className={styles.list}>
+                            <li className={styles.listItem}>Anonymous cryptographic addresses</li>
+                            <li className={styles.listItem}>Connection timestamps</li>
+                            <li className={styles.listItem}>Message frequency and size</li>
+                            <li className={styles.listItem}>Abuse reports linked to an address</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
             {/* 4. How Abuse Reporting Works */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>4. How Abuse Reporting Works</h2>
-                <ol style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', marginBottom: '1rem' }}>
-                    <li style={{ marginBottom: '0.5rem' }}>A user may report another address from within the chat interface.</li>
-                    <li style={{ marginBottom: '0.5rem' }}>Reports are linked only to the <strong>reported cryptographic address</strong>.</li>
-                    <li style={{ marginBottom: '0.5rem' }}>Reports do <strong>not</strong> include message content.</li>
-                    <li>Each report is timestamped and stored securely.</li>
-                </ol>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>Reports are rate‑limited to prevent false reporting.</p>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>4. How Abuse Reporting Works</h2>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>A user may report another address from within the chat interface.</li>
+                    <li className={styles.listItem}>Reports are linked only to the <strong>reported cryptographic address</strong>.</li>
+                    <li className={styles.listItem}>Reports do <strong>not</strong> include message content.</li>
+                    <li className={styles.listItem}>Each report is timestamped and stored securely.</li>
+                </ul>
+                <p className={styles.text}>Reports are rate‑limited to prevent false reporting.</p>
             </section>
 
             {/* 5. Enforcement Model */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>5. Enforcement Model</h2>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>5. Enforcement Model</h2>
 
                 <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Threshold-Based Action</h3>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'none', marginBottom: '1.5rem' }}>
-                    <li style={{ marginBottom: '0.5rem' }}>• <strong>1–2 reports</strong> → Logged, no action</li>
-                    <li style={{ marginBottom: '0.5rem' }}>• <strong>3–4 reports</strong> → Address flagged for monitoring</li>
-                    <li>• <strong style={{ color: 'var(--status-danger)' }}>5 confirmed reports</strong> → Automatic enforcement</li>
+                <ul className={styles.list} style={{ marginBottom: '1.5rem' }}>
+                    <li className={styles.listItem}><strong>1–2 reports</strong> → Logged, no action</li>
+                    <li className={styles.listItem}><strong>3–4 reports</strong> → Address flagged for monitoring</li>
+                    <li className={styles.listItem}><strong style={{ color: 'var(--status-danger)' }}>5 confirmed reports</strong> → Automatic enforcement (Blocking)</li>
                 </ul>
 
                 <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Enforcement Actions May Include:</h3>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc', marginBottom: '1rem' }}>
-                    <li>Temporary communication restrictions</li>
-                    <li>Permanent address suspension</li>
-                    <li>Blocking access to the relay server</li>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>Temporary communication restrictions</li>
+                    <li className={styles.listItem}>Permanent address suspension</li>
+                    <li className={styles.listItem}>Blocking access to the relay server</li>
                 </ul>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                <p className={styles.text}>
                     Actions are applied <strong>only to the abusive address</strong>, not IP-wide unless required for security.
                 </p>
             </section>
 
             {/* 6. No Appeal, No Recovery */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>6. No Appeal, No Recovery</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Because Anonym has:</p>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc', marginBottom: '1rem' }}>
-                    <li>No accounts</li>
-                    <li>No identities</li>
-                    <li>No recovery mechanisms</li>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>6. No Appeal, No Recovery</h2>
+                <p className={styles.text}>Because Anonym has:</p>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>No accounts</li>
+                    <li className={styles.listItem}>No identities</li>
+                    <li className={styles.listItem}>No recovery mechanisms</li>
                 </ul>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', fontWeight: 'bold', marginBottom: '0.5rem' }}>Suspended addresses cannot be restored.</p>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>Users may generate a new identity, but repeat abuse patterns may result in broader restrictions.</p>
+                <p className={styles.text} style={{ fontWeight: 'bold' }}>Suspended addresses cannot be restored.</p>
+                <p className={styles.text}>Users may generate a new identity, but repeat abuse patterns may result in broader restrictions.</p>
             </section>
 
             {/* 7. False Reporting Policy */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>7. False Reporting Policy</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>7. False Reporting Policy</h2>
+                <p className={styles.text}>
                     Submitting false or malicious abuse reports is itself considered abuse and may result in:
                 </p>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc' }}>
-                    <li>Loss of reporting privileges</li>
-                    <li>Temporary or permanent restrictions</li>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>Loss of reporting privileges</li>
+                    <li className={styles.listItem}>Temporary or permanent restrictions</li>
                 </ul>
             </section>
 
             {/* 8. Legal Cooperation */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>8. Legal Cooperation</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>8. Legal Cooperation</h2>
+                <p className={styles.text}>
                     Anonym does not proactively monitor content. If legally required:
                 </p>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc' }}>
-                    <li>We may provide <strong>metadata only</strong> (timestamps, addresses, report counts)</li>
-                    <li>We cannot provide message content due to encryption</li>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>We may provide <strong>metadata only</strong> (timestamps, addresses, report counts)</li>
+                    <li className={styles.listItem}>We cannot provide message content due to encryption</li>
                 </ul>
             </section>
 
             {/* 9. User Responsibility */}
-            <section style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>9. User Responsibility</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>By using Anonym, you agree:</p>
-                <ul style={{ lineHeight: '1.6', color: 'var(--text-secondary)', paddingLeft: '1.5rem', listStyleType: 'disc', marginBottom: '1rem' }}>
-                    <li>To communicate lawfully</li>
-                    <li>Not to harass or harm others</li>
-                    <li>To accept enforcement decisions as final</li>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>9. User Responsibility</h2>
+                <p className={styles.text}>By using Anonym, you agree:</p>
+                <ul className={styles.list}>
+                    <li className={styles.listItem}>To communicate lawfully</li>
+                    <li className={styles.listItem}>Not to harass or harm others</li>
+                    <li className={styles.listItem}>To accept enforcement decisions as final</li>
                 </ul>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>Privacy is a shared responsibility.</p>
+                <p className={styles.text}>Privacy is a shared responsibility.</p>
             </section>
 
             {/* 10. Policy Updates */}
-            <section style={{ marginBottom: '4rem' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>10. Policy Updates</h2>
-                <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>10. Policy Updates</h2>
+                <p className={styles.text}>
                     This policy may evolve as Anonym grows. Material changes will be reflected on the landing page.
                 </p>
             </section>
 
-            <section style={{ marginTop: '2rem', padding: '2rem', background: 'var(--bg-surface)', borderRadius: '8px', textAlign: 'center', borderTop: '4px solid var(--accent-primary)' }}>
+            <section className={styles.infoBox} style={{ textAlign: 'center', marginTop: '4rem', borderTop: '4px solid var(--accent-primary)' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Anonym</h3>
-                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>Private by design. Accountable by necessity.</p>
+                <p className={styles.text} style={{ fontSize: '1.1rem', margin: 0 }}>Private by design. Accountable by necessity.</p>
             </section>
 
-            <div style={{ marginTop: '3rem', textAlign: 'center' }}>
-                <Link href="/" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'none' }}>
+            <footer className={styles.footer} style={{ borderTop: 'none' }}>
+                <Link href="/" className={styles.link}>
                     ← Return to Anonym
                 </Link>
-            </div>
+            </footer>
 
         </div>
     );
