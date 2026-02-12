@@ -14,6 +14,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Anonym",
   description: "An anonymous, end-to-end encrypted chat for private conversations with no accounts and auto-expiring messages.",
+  icons: {
+    icon: '/logo1.png',
+    shortcut: '/logo1.png',
+    apple: '/logo1.png',
+  },
 };
 
 export default function RootLayout({ children }) {
