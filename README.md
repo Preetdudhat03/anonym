@@ -1,4 +1,4 @@
-3# Anonymous End-to-End Encrypted Chat System (Redesigned)
+# Anonymous End-to-End Encrypted Chat System (Redesigned)
 
 ## Security Architecture (Ed25519 + X25519 + AES-GCM)
 
